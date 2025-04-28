@@ -1,0 +1,82 @@
+ Volume in drive C is OS
+ Volume Serial Number is DE59-8FCA
+
+ Directory of C:\GitHub\SiliconDreamArtists\SovereignTrust.Core\Src\PowerShell
+
+04/26/2025  10:03 PM               756 New-ModuleManifest.ps1
+               1 File(s)            756 bytes
+
+ Directory of C:\GitHub\SiliconDreamArtists\SovereignTrust.Core\Src\PowerShell\Classes\Attachments
+
+04/26/2025  10:00 PM               335 BaseAttachment.ps1
+               1 File(s)            335 bytes
+
+ Directory of C:\GitHub\SiliconDreamArtists\SovereignTrust.Core\Src\PowerShell\Classes\Attachments\Condenser
+
+04/27/2025  08:52 PM             1,223 GlobalCondenserFeedback.ps1
+04/27/2025  06:32 PM               526 GlobalCondenserProposal.ps1
+04/27/2025  09:33 PM               173 MapCondenserFeedback.ps1
+04/27/2025  09:33 PM               337 MapCondenserProposal.ps1
+               4 File(s)          2,259 bytes
+
+ Directory of C:\GitHub\SiliconDreamArtists\SovereignTrust.Core\Src\PowerShell\Classes\Attachments\Condenser\Graph
+
+04/27/2025  09:56 PM             2,758 Context.ps1
+04/27/2025  09:33 PM             2,790 Graph.ps1
+04/27/2025  09:49 PM               664 GraphReplacementType.ps1
+04/27/2025  05:14 PM               180 ContextDictionaryReplacement.ps1
+               4 File(s)          6,392 bytes
+
+ Directory of C:\GitHub\SiliconDreamArtists\SovereignTrust.Core\Src\PowerShell\Classes\Attachments\Condenser\Services
+
+04/27/2025  05:23 PM             7,672 GlobalCondenserService.ps1
+04/27/2025  08:44 PM             3,017 GraphCondenserService.ps1
+04/27/2025  08:44 PM             1,404 MappedCondenserService.ps1
+04/27/2025  08:52 PM             7,667 MergeCondenserService.ps1
+04/27/2025  09:56 PM             5,362 TokenCondenserService.ps1
+               5 File(s)         25,122 bytes
+
+ Directory of C:\GitHub\SiliconDreamArtists\SovereignTrust.Core\Src\PowerShell\Classes\Conduction
+
+04/26/2025  09:13 PM                 0 Conduction.ps1
+04/26/2025  10:00 PM               972 ConductionFeedback.ps1
+04/26/2025  10:00 PM             1,064 ConductionResult.ps1
+04/27/2025  10:49 AM             2,371 Conductor.ps1
+               4 File(s)          4,407 bytes
+
+ Directory of C:\GitHub\SiliconDreamArtists\SovereignTrust.Core\Src\PowerShell\Classes\Conduit
+
+04/26/2025  09:49 PM               717 Complete-Conduction.ps1
+04/26/2025  10:01 PM             1,618 Conduit.ps1
+04/26/2025  09:47 PM               565 Invoke-Conduction.ps1
+04/26/2025  10:00 PM             1,156 Start-Conduction.ps1
+               4 File(s)          4,056 bytes
+
+ Directory of C:\GitHub\SiliconDreamArtists\SovereignTrust.Core\Src\PowerShell\Classes\Memory
+
+04/27/2025  06:07 PM             1,175 Jacket.ps1
+04/27/2025  05:55 PM             2,034 Wire.ps1
+               2 File(s)          3,209 bytes
+
+ Directory of C:\GitHub\SiliconDreamArtists\SovereignTrust.Core\Src\PowerShell\Utilities\Conduction
+
+04/27/2025  02:39 PM             1,881 Convert-AgentAttachmentsToConductor.ps1
+04/27/2025  02:33 PM             1,276 Get-AgentForConductor.ps1
+04/27/2025  02:31 PM             2,371 Start-BondingConductor.ps1
+               3 File(s)          5,528 bytes
+
+ Directory of C:\GitHub\SiliconDreamArtists\SovereignTrust.Core\Src\PowerShell\Utilities\Json
+
+04/25/2025  05:53 PM             1,677 Add-JsonPropertyValue.ps1
+04/25/2025  08:42 PM               636 Convert-JsonToHashtable.ps1
+04/25/2025  06:12 PM               431 Get-DictionaryValue.ps1
+04/23/2025  11:33 PM             1,272 Get-VirtualValueFromJson.ps1
+04/25/2025  06:05 PM               801 Load-JsonObjectFromFile.ps1
+04/27/2025  02:54 AM             3,578 Resolve-PathFromDictionary.ps1
+04/27/2025  02:57 AM             1,288 Resolve-RegexPlaceholders.ps1
+04/25/2025  08:42 PM               831 Set-DictionaryValue.ps1
+               8 File(s)         10,514 bytes
+
+     Total Files Listed:
+              36 File(s)         62,578 bytes
+               0 Dir(s)  56,869,265,408 bytes free
