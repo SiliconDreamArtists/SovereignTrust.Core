@@ -6,7 +6,7 @@ class Conduit {
     [bool]$IsRunning = $false
     [hashtable]$TransientTypeDictionary = @{}
     [hashtable]$SingletonTypeDictionary = @{}
-    [object]$ServiceContainer  # Placeholder if you want to extend later
+    [object]$ServiceContainer 
     [object]$ConduitJacket
 
     Conduit() {

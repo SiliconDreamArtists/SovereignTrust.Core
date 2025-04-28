@@ -114,7 +114,7 @@ class TokenCondenserService {
 
                 $tokenGraphResult = $this.ConduitJacket.MappedStorageService.ReadXmlXpath($relativePath, $null, $adjustedBasePath, $null, "Documents")
 
-                if ($signal.MergeSignalAndVerify($tokenGraphResult)) {
+                if ($signal.MergeSignalAndVerifySuccess($tokenGraphResult)) {
                     $signal.Result.ContextNavigator[$relativePath] = $tokenGraphResult.Result.CreateNavigator()
                 } else {
                     break

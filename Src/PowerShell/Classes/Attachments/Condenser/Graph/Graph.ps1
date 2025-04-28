@@ -1,6 +1,6 @@
 class Graph {
     [object]$Metadata
-    [XmlNode[]]$BlockContext
+    [object[]]$BlockContext
     [object]$XmlRepresentation
     [string]$GraphContent
     [Signal]$GraphSignal

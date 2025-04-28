@@ -54,7 +54,7 @@ class GlobalCondenserService {
             )
         }
 
-        if ($signal.MergeSignalAndVerify($documentSignal) -and $documentSignal.Result) {
+        if ($signal.MergeSignalAndVerifySuccess($documentSignal) -and $documentSignal.Result) {
             $Wire.ContentDynamic = $documentSignal.Result
             $Wire.ContentString = ($documentSignal.Result | ConvertTo-Json -Depth 10)
         }
@@ -168,8 +168,7 @@ class GlobalCondenserService {
 
         if ($Reload) {
             $loadResult = $this.LoadItemContent($Wire, $Reload)
-            if (-not $signal.MergeSignalAndVerify($loadResult)) {
-                $this.AddOrReplaceOutput($Feedback, [CondenserResultOutput]::new("$($Wire.Identifier)", "Circuit ($($Wire.Name))", "Circuit ($($Wire.Name))", $signal.CriticalSummary))
+            if (-not $signal.MergeSignalAndVerifySuccess($loadResult)) {
                 return $signal
             }
         }

@@ -1,16 +1,20 @@
+class MergeCondenserSettings{
+
+}
+
 class MergeCondenserService {
     [TokenCondenserService]$TokenGraphService
     [MergeCondenserSettings]$Settings
     [Conductor]$Conductor
 
-    MergeCondenserService([MappedCondenserService]$MappedCondenserService, [Conductor]$Conductor) {
+    MergeCondenserService([object]$MappedCondenserService, [Conductor]$Conductor) {
         $this.TokenGraphService = [TokenCondenserService]::new()
         $this.TokenGraphService.ConduitJacket = $Conductor
         $this.Settings = [MergeCondenserSettings]::new()
         $this.Conductor = $Conductor
     }
 
-    [Signal] RetrieveWire([MappedStorageService]$MappedStorageService, [Guid]$Version) {
+    [Signal] RetrieveWire([object]$MappedStorageService, [Guid]$Version) {
         $signal = $MappedStorageService.DownloadWire($Version)
         if ($signal.Success) {
             $latestWire = $MappedStorageService.DownloadWire($signal.Result.Identifier)
@@ -22,13 +26,13 @@ class MergeCondenserService {
         return $signal
     }
 
-    [Signal] CondenseDynamics([array]$Dynamics) {
+    [Signal] ImportBlobs([array]$Blobs) {
         $signal = [Signal]::Start()
         $result = @{}
 
-        foreach ($dyn in $Dynamics) {
-            $dict = ($dyn | ConvertTo-Json -Depth 10 | ConvertFrom-Json) -as [hashtable]
-            foreach ($item in $dict.GetEnumerator()) {
+        foreach ($blob in $Blobs) {
+            $itemDictionary = ($blob | ConvertTo-Json -Depth 10 | ConvertFrom-Json) -as [hashtable]
+            foreach ($item in $itemDictionary.GetEnumerator()) {
                 if (-not $result.ContainsKey($item.Key)) {
                     $result[$item.Key] = $item.Value
                 }
@@ -57,7 +61,7 @@ class MergeCondenserService {
         return $signal
     }
 
-    [Signal] Condense([MappedStorageService]$StorageService, [MergeCondenserProposal]$Proposal, [string]$OverrideGraphVirtualPath = $null, [bool]$ReturnRequiredValues = $false) {
+    [Signal] Condense([object]$StorageService, [MergeCondenserProposal]$Proposal, [string]$OverrideGraphVirtualPath = $null, [bool]$ReturnRequiredValues = $false) {
         $feedback = [MergeCondenserFeedback]::new()
         $feedback.LogInformation("Condense Started")
 
@@ -125,7 +129,7 @@ class MergeCondenserService {
             $tokenGraphResult = ($this.Conductor.MappedTokenService.TokenCondenserService ?? $this.TokenGraphService).GetContext(
                 $CondensedTokenGraph, $OverloadTokens, $OverrideGraphVirtualPath
             )
-            $signal.MergeSignalAndVerify($tokenGraphResult)
+            $signal.MergeSignalAndVerifySuccess($tokenGraphResult)
 
             if ($signal.Success) {
                 $Feedback.Context = $tokenGraphResult.Result
@@ -138,7 +142,7 @@ class MergeCondenserService {
         return $signal
     }
 
-    [Signal] Invoke([string]$Slot, [CondenserProposal]$Proposal, [object]$CancellationToken) {
+    [Signal] Invoke([string]$Slot, [object]$Proposal, [object]$CancellationToken) {
         $signal = [Signal]::Start()
         $condenseResult = $this.Condense($this.Conductor.MappedStorageService, $Proposal)
         $signal.Result = $condenseResult.Result

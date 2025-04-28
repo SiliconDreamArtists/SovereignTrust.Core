@@ -8,7 +8,7 @@ class MappedCondenserService {
         $this.Conductor = $Conductor
         $this.GlobalCondenser = [GlobalCondenserService]::new($this, $Conductor)
         $this.MergeCondenser = [MergeCondenserService]::new($this, $Conductor)
-        $this.GraphCondenser = [GraphCondenser]::new($this)
+        $this.GraphCondenser = [GraphCondenserService]::new($this)
     }
 
     [object] Invoke([string]$Slot, [object]$Proposal, [object]$CancellationToken = $null) {

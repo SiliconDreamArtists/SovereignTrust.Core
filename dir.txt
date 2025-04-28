@@ -24,7 +24,7 @@
 04/27/2025  09:56 PM             2,758 Context.ps1
 04/27/2025  09:33 PM             2,790 Graph.ps1
 04/27/2025  09:49 PM               664 GraphReplacementType.ps1
-04/27/2025  05:14 PM               180 ContextDictionaryReplacement.ps1
+04/27/2025  05:14 PM               180 ContextReplacement.ps1
                4 File(s)          6,392 bytes
 
  Directory of C:\GitHub\SiliconDreamArtists\SovereignTrust.Core\Src\PowerShell\Classes\Attachments\Condenser\Services
