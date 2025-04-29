@@ -22,7 +22,7 @@ class MergeCondenserFeedback {
     }
 
     [void] UnresolvedWireGlobal([string]$Prefix, [string]$Name, [object[]]$Options) {
-        $existing = $this.UnresolvedWireGlobals | Where-Object { "$($_.Prefix).$($_.Name)" -eq "$Prefix.$Name" }
+        $existing = $this.UnresolvedWireGlobals | Where-Dictionary { "$($_.Prefix).$($_.Name)" -eq "$Prefix.$Name" }
         if (-not $existing) {
             $entry = [pscustomobject]@{
                 Prefix = $Prefix
@@ -73,7 +73,7 @@ class MergeCondenserFeedback {
 
     [string] Finalize() {
         return $this.Signal.Entries `
-            | Where-Object { $_.Level -eq 'Critical' } `
+            | Where-Dictionary { $_.Level -eq 'Critical' } `
             | ForEach-Object { $_.Message } `
             -join "`n"
     }

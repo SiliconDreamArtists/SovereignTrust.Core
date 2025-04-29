@@ -6,19 +6,38 @@ class Conductor {
     [hashtable]$RunModel
     [object]$PrimaryConduit
     [System.Collections.Generic.List[object]]$ServiceConduits
+    [hashtable]$MappedAttachments
     [hashtable]$Attachments
+    [System.Collections.Generic.List[object]]$AttachmentJackets
     [System.Collections.Queue]$QueueSurface
     [string]$ExecutionMode  # 'Sequential' or 'Parallel'
     [string]$Status
+    
+    # New properties for full bonding
+    [string]$Environment
+    [string]$AgentName
+    [string]$RoleName
+    [object]$PrimaryAgent
+    [System.Collections.Generic.List[object]]$SecondaryAgents
 
     Conductor([string]$id) {
         $this.Id = $id
         $this.RunModel = @{}
         $this.ServiceConduits = [System.Collections.Generic.List[object]]::new()
-        $this.Attachments = @{}
+        $this.MappedAttachments = @{}
+#        $this.Attachments = @{}
+        $this.AttachmentJackets = [System.Collections.Generic.List[object]]::new()
         $this.QueueSurface = [System.Collections.Queue]::new()
         $this.ExecutionMode = "Sequential"
         $this.Status = "Initialized"
+        $this.SecondaryAgents = [System.Collections.Generic.List[object]]::new()
+
+        $this.LoadMappedAttachments()
+    }
+
+    [void] LoadMappedAttachments() {
+        $mappedStorage = [MappedStorageAttachment]::new()
+        Add-PathToDictionary -Dictionary $this.MappedAttachments -Path "Storage" -Value $mappedStorage
     }
 
     [void] AttachPrimaryConduit([object]$conduit) {
@@ -30,7 +49,7 @@ class Conductor {
     }
 
     [void] MountAttachment([string]$name, [object]$attachment) {
-        $this.Attachments[$name] = $attachment
+        Add-PathToDictionary -Dictionary $this.Attachments -Path $name -Value $attachment
     }
 
     [void] EnqueueSignal([object]$signal) {
@@ -67,7 +86,7 @@ class Conductor {
         if ($null -ne $this.PrimaryConduit) {
             $this.PrimaryConduit.InvokeConduit($signal)
         }
-        
+
         foreach ($serviceConduit in $this.ServiceConduits) {
             $serviceConduit.InvokeConduit($signal)
         }

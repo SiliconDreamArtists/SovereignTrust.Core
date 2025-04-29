@@ -2,17 +2,17 @@
 function Get-DictionaryValue {
     param (
         [Parameter(Mandatory)]
-        $Object,
+        $Dictionary,
 
         [Parameter(Mandatory)]
         [string]$Key
     )
 
-    if ($Object -is [System.Collections.IDictionary] -and $Object.Contains($Key)) {
-        return $Object[$Key]
+    if ($Dictionary -is [System.Collections.IDictionary] -and $Dictionary.Contains($Key)) {
+        return $Dictionary[$Key]
     }
-    elseif ($Object -is [pscustomobject] -and $Object.PSObject.Properties.Match($Key)) {
-        return $Object.$Key
+    elseif ($Dictionary -is [pscustomobject] -and $Dictionary.PSObject.Properties.Match($Key)) {
+        return $Dictionary.$Key
     }
 
     return $null

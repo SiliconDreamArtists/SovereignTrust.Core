@@ -67,7 +67,7 @@
 
  Directory of C:\GitHub\SiliconDreamArtists\SovereignTrust.Core\Src\PowerShell\Utilities\Json
 
-04/25/2025  05:53 PM             1,677 Add-JsonPropertyValue.ps1
+04/25/2025  05:53 PM             1,677 Add-PathToDictionary.ps1
 04/25/2025  08:42 PM               636 Convert-JsonToHashtable.ps1
 04/25/2025  06:12 PM               431 Get-DictionaryValue.ps1
 04/23/2025  11:33 PM             1,272 Get-VirtualValueFromJson.ps1

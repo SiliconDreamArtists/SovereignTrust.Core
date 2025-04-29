@@ -1,8 +1,9 @@
 function Resolve-PathFromDictionary {
     param (
-        $Dictionary,
-        [string]$Path,
-        [bool]$IgnoreJsonObject = $false
+        [Parameter(Mandatory)] $Dictionary,
+        [Parameter(Mandatory)] [string]$Path,
+        [bool]$IgnoreInternalObjects = $true,
+        [string]$InternalObjectsPrefix = "_"
     )
 
     $parts = $Path -split '\.'
@@ -11,38 +12,45 @@ function Resolve-PathFromDictionary {
     foreach ($part in $parts) {
         if ($null -eq $current) { return $null }
 
-        if (-not $IgnoreJsonObject) {
-            # Step 1: Dive into _JsonObject if present
-            if ($current -is [hashtable] -and $current.Contains("_JsonObject")) {
-                $current = $current["_JsonObject"]
+        if ($IgnoreInternalObjects) {
+            if ($current -is [hashtable]) {
+                foreach ($key in @($current.Keys)) {
+                    if ($key.StartsWith($InternalObjectsPrefix)) {
+                        $current.Remove($key)
+                    }
+                }
             }
-            elseif ($current -is [pscustomobject] -and $current.PSObject.Properties.Name -contains "_JsonObject") {
-                $current = $current._JsonObject
+            elseif ($current -is [pscustomobject]) {
+                foreach ($prop in @($current.PSObject.Properties)) {
+                    if ($prop.Name.StartsWith($InternalObjectsPrefix)) {
+                        $current.PSObject.Properties.Remove($prop.Name)
+                    }
+                }
             }
         }
 
-        # Step 2: Navigate next node
+        # Traverse dictionary
         if ($current -is [System.Collections.IDictionary] -and $current.Contains($part)) {
             $current = $current[$part]
         }
+        # Traverse hashtable
         elseif ($current -is [hashtable]) {
             if ($current.Contains($part)) {
                 $current = $current[$part]
-            }
-            else {
+            } else {
                 return $null
             }
         }
+        # Traverse pscustomobject
         elseif ($current -is [pscustomobject]) {
             if ($current.PSObject.Properties.Name -contains $part) {
                 $current = $current.$part
-            }
-            else {
+            } else {
                 return $null
             }
         }
-        elseif ($current -is [System.Collections.IEnumerable]) {
-            # 🚨 New: If current node is an array, find item where Name matches $part
+        # Traverse enumerable (array-like) by matching Name property
+        elseif ($current -is [System.Collections.IEnumerable] -and -not ($current -is [string])) {
             $found = $null
             foreach ($item in $current) {
                 if (($item -is [pscustomobject] -or $item -is [hashtable]) -and `
@@ -53,62 +61,23 @@ function Resolve-PathFromDictionary {
             }
             if ($found) {
                 $current = $found
-            }
-            else {
+            } else {
                 return $null
             }
         }
-        else {
-            return $null
-        }
-    }
-
-    return $current
-}
-
-
-function Resolve-PathFromDictionary-Previous {
-    param (
-        $Dictionary,
-        [string]$Path,
-        [bool]$IgnoreJsonObject = $false
-    )
-
-    $parts = $Path -split '\.'
-    $current = $Dictionary
-
-    foreach ($part in $parts) {
-        if ($null -eq $current) { return $null }
-
-        if (-not $IgnoreJsonObject) {
-            # Step 1: Dive into _JsonObject if present
-            if ($current -is [hashtable] -and $current.Contains("_JsonObject")) {
-                $current = $current["_JsonObject"]
+        # Traverse PowerShell class instance
+        elseif ($current.GetType().IsClass -and $current.GetType().Namespace -ne "System") {
+            $propInfo = $current.GetType().GetProperty($part)
+            if ($null -eq $propInfo) {
+                throw "Class $($current.GetType().Name) does not have a property named '$part'."
             }
-            elseif ($current -is [pscustomobject] -and $current.PSObject.Properties.Name -contains "_JsonObject") {
-                $current = $current._JsonObject
-            }
-        }
 
-        # Step 2: Access next key
-        if ($current -is [System.Collections.IDictionary] -and $current.Contains($part)) {
-            $current = $current[$part]
-        }
-        elseif ($current -is [hashtable]) {
-            if ($current.Contains($part)) {
-                $current = $current[$part]
-            }
-            else {
+            $next = $propInfo.GetValue($current, $null)
+            if ($null -eq $next) {
                 return $null
             }
-        }
-        elseif ($current -is [pscustomobject]) {
-            if ($current.PSObject.Properties.Name -contains $part) {
-                $current = $current.$part
-            }
-            else {
-                return $null
-            }
+
+            $current = $next
         }
         else {
             return $null

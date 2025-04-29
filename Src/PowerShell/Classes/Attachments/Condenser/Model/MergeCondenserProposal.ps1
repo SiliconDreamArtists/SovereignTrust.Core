@@ -92,7 +92,7 @@ class MergeCondenserProposal {
         try {
             if (![string]::IsNullOrWhiteSpace($NestNodePath)) {
                 $jtoken = [JsonHelper]::FromObject($TokenDictionaryDynamic)
-                $segments = $NestNodePath -split '\.' | Sort-Object -Descending
+                $segments = $NestNodePath -split '\.' | Sort-Dictionary -Descending
                 foreach ($segment in $segments) {
                     $wrapper = [Newtonsoft.Json.Linq.JObject]::new()
                     [JsonHelper]::SetProperty($wrapper, $segment, $jtoken)

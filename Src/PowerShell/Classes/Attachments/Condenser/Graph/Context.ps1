@@ -13,7 +13,7 @@ class Context {
         try {
             $signal.LogVerbose("Finding matching context navigators for: $ContextName")
 
-            $replacementKeys = $this.Replacements | Where-Object {
+            $replacementKeys = $this.Replacements | Where-Dictionary {
                 $_.Replaces -eq $ContextName
             } | ForEach-Object {
                 $_.GraphName

@@ -1,7 +1,7 @@
 function Get-AgentForConductor {
     param (
         [Parameter(Mandatory = $true)]
-        [hashtable]$Environment,
+        $Environment,
 
         [Parameter(Mandatory = $true)]
         [string]$AgentName,
@@ -30,10 +30,12 @@ function Get-AgentForConductor {
         }
 
         # Attach CurrentRole to Agent
-        $Agent.CurrentRole = $CurrentRole
+        Add-PathToDictionary -Dictionary $Agent -Path CurrentRole -Value $CurrentRole
 
         $signal.LogInformation("Agent '$AgentName' with Role '$RoleName' successfully resolved and bound.")
-        $signal.Result = $Agent
+        Add-PathToDictionary -Dictionary $Agent -Path CurrentRole -Value $CurrentRole
+
+        $signal.SetResult($Agent)
     }
     catch {
         $signal.LogCritical("Unhandled critical failure in Get-AgentForConductor: $_")

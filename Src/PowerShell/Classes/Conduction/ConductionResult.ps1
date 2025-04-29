@@ -18,7 +18,7 @@ class ConductionResult {
 
     ConductionResult() {
         # Default initialization
-        $this.ResultMessages = New-Object 'System.Collections.Generic.List[string]'
+        $this.ResultMessages = New-Dictionary 'System.Collections.Generic.List[string]'
         $this.ConductionSuccessful = $false
         $this.ConductionResultSuccessful = $false
         $this.RelayConductionResult = $false

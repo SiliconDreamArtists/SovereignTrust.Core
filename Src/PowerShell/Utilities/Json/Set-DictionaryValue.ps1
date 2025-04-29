@@ -2,7 +2,7 @@
 function Set-DictionaryValue {
     param (
         [Parameter(Mandatory)]
-        [ref]$Object,
+        [ref]$Dictionary,
 
         [Parameter(Mandatory)]
         [string]$Key,
@@ -11,7 +11,7 @@ function Set-DictionaryValue {
         $Value
     )
 
-    $target = $Object.Value
+    $target = $Dictionary.Value
 
     if ($target -is [System.Collections.Specialized.OrderedDictionary] -or $target -is [hashtable]) {
         $target[$Key] = $Value
@@ -28,6 +28,6 @@ function Set-DictionaryValue {
         throw "[agent] Unsupported object type for Set-DictionaryValue: $($target.GetType().Name)"
     }
 
-    $Object.Value = $target
+    $Dictionary.Value = $target
 }
 

@@ -101,7 +101,7 @@ class TokenCondenserService {
                 }
             }
 
-            foreach ($tokenGraph in ($tokenGraphList | Sort-Object -Unique)) {
+            foreach ($tokenGraph in ($tokenGraphList | Sort-Dictionary -Unique)) {
                 $relativePath = $tokenGraph.Replace("\", "/")
                 $fullPath = $relativePath
                 $adjustedBasePath = $baseImportPath

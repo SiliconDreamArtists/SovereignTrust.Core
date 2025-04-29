@@ -1,4 +1,8 @@
 # Load all files (functions + classes)
+. "$PSScriptRoot/Classes/Attachments/UX/ConsoleLogger.ps1"
+. "$PSScriptRoot/Classes/Attachments/Condenser/JsonHelper.ps1"
+. "$PSScriptRoot/Classes/Attachments/MappedStorageAttachment.ps1"
+
 . "$PSScriptRoot/Classes/Conduction/Conduction.ps1"
 . "$PSScriptRoot/Classes/Conduction/ConductionFeedback.ps1"
 . "$PSScriptRoot/Classes/Conduction/ConductionResult.ps1"
@@ -12,7 +16,6 @@
 
 . "$PSScriptRoot/Classes/Attachments/BaseAttachment.ps1"
 . "$PSScriptRoot/Classes/Attachments/Condenser/CondenserGraphHelper.ps1"
-. "$PSScriptRoot/Classes/Attachments/Condenser/JsonHelper.ps1"
 . "$PSScriptRoot/Classes/Attachments/Condenser/Graph/Context.ps1"
 . "$PSScriptRoot/Classes/Attachments/Condenser/Graph/ContextReplacement.ps1"
 . "$PSScriptRoot/Classes/Attachments/Condenser/Graph/Graph.ps1"
@@ -29,15 +32,20 @@
 . "$PSScriptRoot/Classes/Attachments/Condenser/Services/TokenCondenserService.ps1"
 . "$PSScriptRoot/Classes/Attachments/Condenser/Services/MergeCondenserService.ps1"
 . "$PSScriptRoot/Classes/Attachments/Condenser/Services/MappedCondenserService.ps1"
+
+. "$PSScriptRoot/Utilities/Attachments/Resolve-AttachmentsFromJacket.ps1"
+. "$PSScriptRoot/Utilities/Attachments/Resolve-ConductorAttachments.ps1"
+
 . "$PSScriptRoot/Utilities/Conduction/Convert-AgentAttachmentsToConductor.ps1"
 . "$PSScriptRoot/Utilities/Conduction/Get-AgentForConductor.ps1"
 . "$PSScriptRoot/Utilities/Conduction/Start-BondingConductor.ps1"
-. "$PSScriptRoot/Utilities/Json/Add-JsonPropertyValue.ps1"
+. "$PSScriptRoot/Utilities/Json/Add-PathToDictionary.ps1"
 . "$PSScriptRoot/Utilities/Json/Convert-JsonToHashtable.ps1"
 . "$PSScriptRoot/Utilities/Json/Get-DictionaryValue.ps1"
 . "$PSScriptRoot/Utilities/Json/Get-VirtualValueFromJson.ps1"
 . "$PSScriptRoot/Utilities/Json/Load-JsonObjectFromFile.ps1"
 . "$PSScriptRoot/Utilities/Json/Resolve-PathFromDictionary.ps1"
+. "$PSScriptRoot/Utilities/Json/Resolve-SignalPathFromDictionary.ps1"
 . "$PSScriptRoot/Utilities/Json/Resolve-RegexPlaceholders.ps1"
 . "$PSScriptRoot/Utilities/Json/Set-DictionaryValue.ps1"
 
@@ -45,7 +53,7 @@
 Export-ModuleMember -Function Convert-AgentAttachmentsToConductor
 Export-ModuleMember -Function Get-AgentForConductor
 Export-ModuleMember -Function Start-BondingConductor
-Export-ModuleMember -Function Add-JsonPropertyValue
+Export-ModuleMember -Function Add-PathToDictionary
 Export-ModuleMember -Function Convert-JsonToHashtable
 Export-ModuleMember -Function Get-DictionaryValue
 Export-ModuleMember -Function Get-VirtualValueFromJson
