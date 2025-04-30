@@ -32,9 +32,10 @@ class MappedStorageAttachment {
 
         foreach ($service in $this.ServiceCollection.Keys) {
             $result = $service.ReadObjectAsJson($folder, $fileName)
+            $signal.MergeSignal(@($result))
+
             if ($result.Success()) {
-                $signal.MergeSignal($result)
-                $signal.SetResult($result.Result)
+                $signal.SetResult($result.GetResult())
                 break
             }
         }
@@ -51,9 +52,10 @@ class MappedStorageAttachment {
 
         foreach ($service in $this.ServiceCollection.Keys) {
             $result = $service.ReadObjectAsXml($folder, $fileName)
+            $signal.MergeSignal(@($result))
+
             if ($result.Success()) {
-                $signal.MergeSignal($result)
-                $signal.SetResult($result.Result)
+                $signal.SetResult($result.GetResult())
                 break
             }
         }
@@ -70,9 +72,10 @@ class MappedStorageAttachment {
 
         foreach ($service in $this.ServiceCollection.Keys) {
             $result = $service.DeleteFile($folder, $fileName)
+            $signal.MergeSignal(@($result))
+
             if ($result.Success()) {
-                $signal.MergeSignal($result)
-                $signal.SetResult($result.Result)
+                $signal.SetResult($result.GetResult())
                 break
             }
         }
@@ -89,9 +92,10 @@ class MappedStorageAttachment {
 
         foreach ($service in $this.ServiceCollection.Keys) {
             $result = $service.ListDirectoryObjects($folder)
+            $signal.MergeSignal(@($result))
+
             if ($result.Success()) {
-                $signal.MergeSignal($result)
-                $signal.SetResult($result.Result)
+                $signal.SetResult($result.GetResult())
                 break
             }
         }

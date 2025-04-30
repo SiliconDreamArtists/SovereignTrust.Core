@@ -18,7 +18,7 @@ class GraphCondenserService {
             foreach ($source in $Proposal.SourceRelayList) {
                 $relayData = $Proposal.RelayData | Where-Dictionary { $_.Key.RelayFilename -eq $source }
                 if ($relayData.Value) {
-                    $sourceItem = Resolve-PathFromDictionary -Dictionary $relayData.Value -Path $tag
+                    $sourceItem = Resolve-PathFromDictionaryNoSignal -Dictionary $relayData.Value -Path $tag
                     if ($sourceItem) {
                         $Proposal.Content = $this.UpdateStringValues($Proposal.Content, $sourceItem.ToString(), $tag, $Proposal.MappingType, $Proposal.ReplacementType)
                     }

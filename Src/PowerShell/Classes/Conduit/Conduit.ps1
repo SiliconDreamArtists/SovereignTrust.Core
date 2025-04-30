@@ -7,16 +7,14 @@ class Conduit {
     [hashtable]$TransientTypeDictionary = @{}
     [hashtable]$SingletonTypeDictionary = @{}
     [object]$ServiceContainer 
-    [object]$ConduitJacket
+    [object]$Conductor
 
     Conduit() {
         $this.ConduitIdentifier = [Guid]::NewGuid()
-#        $this.Context = [ConductionContext]::new()
-#        $this.Feedback = [ConductionFeedback]::new()
     }
 
-    [void] EngageConduitJacket([object]$conduitJacket, [hashtable]$transientTypeDictionary, [hashtable]$singletonTypeDictionary) {
-        $this.ConduitJacket = $conduitJacket
+    [void] EngageConductor([object]$conduitJacket, [hashtable]$transientTypeDictionary, [hashtable]$singletonTypeDictionary) {
+        $this.Conductor = $conduitJacket
         if ($transientTypeDictionary) { $this.TransientTypeDictionary = $transientTypeDictionary }
         if ($singletonTypeDictionary) { $this.SingletonTypeDictionary = $singletonTypeDictionary }
     }

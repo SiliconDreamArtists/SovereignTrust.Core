@@ -9,7 +9,7 @@ class MergeCondenserService {
 
     MergeCondenserService([object]$MappedCondenserService, [Conductor]$Conductor) {
         $this.TokenGraphService = [TokenCondenserService]::new()
-        $this.TokenGraphService.ConduitJacket = $Conductor
+        $this.TokenGraphService.Conductor = $Conductor
         $this.Settings = [MergeCondenserSettings]::new()
         $this.Conductor = $Conductor
     }
@@ -78,13 +78,13 @@ class MergeCondenserService {
                 $lead = [CondenserGraphHelper]::BuildGraph($Proposal.LeadWire)
                 $circuit = [CondenserGraphHelper]::BuildGraph($Proposal.CircuitWire)
                 [CondenserGraphHelper]::MergeGraphs($lead, $circuit)
-                $Proposal.CondensedWire = $lead
+                $Proposal.TokenDocument = $lead
             } else {
-                $Proposal.CondensedWire = $Proposal.CircuitWire
+                $Proposal.TokenDocument = $Proposal.CircuitWire
             }
 
             if (-not $Proposal.PerformMergeOnly) {
-                $updatedWire = $this.ReplaceTagValues($Proposal, $feedback, $Proposal.CondensedWire, $ReturnRequiredValues)
+                $updatedWire = $this.ReplaceTagValues($Proposal, $feedback, $Proposal.TokenDocument, $ReturnRequiredValues)
                 if ($feedback.MergeSignalAndCheckForFail($updatedWire)) { return $feedback }
 
                 $outerParams = $this.ReplaceServiceTokens($updatedWire.Result, $feedback, $Proposal.CircuitWire, $OverrideGraphVirtualPath, $ReturnRequiredValues)
@@ -93,7 +93,7 @@ class MergeCondenserService {
                 $updatedWire = $this.CondenseRelayTokenSetsIntoGraph($Proposal.RelayDataDictionary, $outerParams.Result)
                 $feedback.Result = $updatedWire.Result
             } else {
-                $feedback.Result = $Proposal.CondensedWire
+                $feedback.Result = $Proposal.TokenDocument
             }
         } catch {
             $feedback.LogCritical($_)

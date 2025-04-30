@@ -1,129 +1,153 @@
 class TokenCondenserService {
-    [object]$ConduitJacket
+    [object]$Conductor
 
     TokenCondenserService() {
-        $this.ConduitJacket = $null
+        $this.Conductor = $null
     }
 
     [object] GetMergeCondenserSettings() {
-        if ($this.ConduitJacket -and $this.ConduitJacket.MappedCondenserService -and $this.ConduitJacket.MappedCondenserService.MergeCondenser) {
-            return $this.ConduitJacket.MappedCondenserService.MergeCondenser.Settings
+        if ($this.Conductor -and $this.Conductor.MappedCondenserService -and $this.Conductor.MappedCondenserService.MergeCondenser) {
+            return $this.Conductor.MappedCondenserService.MergeCondenser.Settings
         } else {
             return [PSCustomObject]@{} # empty settings object
         }
     }
 
-    [object] GetToken($Value, $CondenserFeedback, [bool]$ThrowExceptionOnEmpty = $true, [int]$RetryAttempts = 2) {
-        $signal = [Signal]::Start($Value)
-
-        if ([string]::IsNullOrWhiteSpace($Value)) { return $signal }
-
-        $firstLookup = $Value.IndexOf(".")
-        if ($firstLookup -lt 0) { return $signal }
-
-        $tokenGraphFilePath = $Value.Substring(0, $firstLookup)
-        $xpath = "/" + $Value.Substring($firstLookup).Replace(".", "/").Replace("[", "[@").Replace("[@@", "[@")
-
-        $matchingNavigators = $CondenserFeedback.Context.FindMatchingContextDictionary($tokenGraphFilePath)
-        if (-not $matchingNavigators.Result -or $matchingNavigators.Result.Count -eq 0) {
-            $signal.LogCritical("Token graph dictionary not found for lookup: $Value")
+    [Signal] GetToken([string]$Value, $CondenserFeedback, [bool]$ThrowExceptionOnEmpty = $true, [int]$RetryAttempts = 2) {
+        $signal = [Signal]::new("GetToken:$Value")
+    
+        if ([string]::IsNullOrWhiteSpace($Value)) {
+            $signal.LogWarning("Token value was empty or null.")
             return $signal
         }
-
-        foreach ($navigator in $matchingNavigators.Result) {
+    
+        $firstLookup = $Value.IndexOf(".")
+        if ($firstLookup -lt 0) {
+            $signal.LogWarning("Token missing required lookup structure (e.g., no dot separator): $Value")
+            return $signal
+        }
+    
+        $tokenGraphFilePath = $Value.Substring(0, $firstLookup)
+        $xpath = "/" + $Value.Substring($firstLookup).Replace(".", "/").Replace("[", "[@").Replace("[@@", "[@")
+    
+        $matchingNavigators = $CondenserFeedback.Context.FindMatchingContextDictionary($tokenGraphFilePath)
+        $signal.MergeSignal(@($matchingNavigators))
+    
+        $navigators = $matchingNavigators.GetResult()
+        if (-not $navigators -or $navigators.Count -eq 0) {
+            $signal.LogCritical("Token graph dictionary not found for: $Value")
+            return $signal
+        }
+    
+        foreach ($navigator in $navigators) {
             try {
                 $node = $navigator.SelectSingleNode($xpath)
                 if ($node) {
-                    $signal.Result = $node.InnerXml
+                    $signal.SetResult($node.InnerXml)
+                    $signal.LogInformation("Token successfully resolved: $Value → $($node.InnerXml)")
                     return $signal
                 }
             } catch {
-                $signal.LogCritical("Error selecting node '$xpath': $_")
+                $signal.LogWarning("Navigator exception for path '$xpath': $_")
             }
         }
-
-        $signal.LogCritical("Token node not found: $xpath")
+    
+        $signal.LogCritical("Token not resolved — node not found at: $xpath")
         return $signal
     }
-
-    [object] GetContext($CondensedWire, $CircuitWireTokenGraphs, $OverloadGraphVirtualPath = $null) {
-        $signal = [Signal]::Start([Context]::new())
-
+    
+    [Signal] GetContext($TokenDocument, $TokenGraphOverrides, $OverloadGraphVirtualPath = $null) {
+        $signal = [Signal]::new("GetContext")
+    
         try {
+            # ░▒▓█ SETTINGS RETRIEVAL █▓▒░
             $settings = $this.GetMergeCondenserSettings()
             $nodeName = $settings.CondenserSettingsNodeName
-
-            $tokenGraphsToken = if ($CondensedWire -is [Newtonsoft.Json.Linq.JToken]) {
-                $CondensedWire.SelectToken($nodeName)
+    
+            # ░▒▓█ TOKEN NODE RESOLUTION █▓▒░
+            $tokenGraphsSignal = if ($TokenDocument -is [Newtonsoft.Json.Linq.JToken]) {
+                [Signal]::Start($TokenDocument.SelectToken($nodeName))
             } else {
-                ($CondensedWire | ConvertFrom-Json).$nodeName
+                Resolve-PathFromDictionary -Dictionary $TokenDocument -Path $nodeName
             }
-
-            if (-not $tokenGraphsToken) {
-                $signal.LogWarning("Tokens node '$nodeName' not found.")
-                return $signal
-            }
-
-            $tokenGraphs = $CondensedWire.$nodeName
-            if (-not $tokenGraphs) { return $signal }
-
-            $tokenGraphs = $tokenGraphs[$settings.TokensNodeName][$settings.GraphNodeName]
+    
+            $signal.MergeSignal(@($tokenGraphsSignal))
+            $tokenGraphs = $tokenGraphsSignal.GetResult()
+    
             if (-not $tokenGraphs) {
-                $signal.LogWarning("Graph node not found under tokens.")
+                $signal.LogWarning("Tokens node '$nodeName' not found in TokenDocument.")
                 return $signal
             }
-
-            $baseImportPath = $tokenGraphs[$settings.BaseImportPathNodeName]
-            $importListDynamic = $tokenGraphs[$settings.ImportNodeName]
-
-            if (-not $baseImportPath -or -not $importListDynamic) {
-                $signal.LogWarning("Missing baseImportPath or importList.")
+    
+            $graphsNode = $tokenGraphs[$settings.TokensNodeName][$settings.GraphNodeName]
+            if (-not $graphsNode) {
+                $signal.LogWarning("Graph node '$($settings.GraphNodeName)' not found under Tokens.")
                 return $signal
             }
-
-            $replacements = $tokenGraphs["replacements"]
+    
+            # ░▒▓█ IMPORT CONFIG █▓▒░
+            $tokenGraphRoot = $graphsNode[$settings.TokenGraphRootNodeName]
+            $importListRaw = $graphsNode[$settings.ImportNodeName]
+    
+            if (-not $tokenGraphRoot -or -not $importListRaw) {
+                $signal.LogWarning("Missing tokenGraphRoot or importList.")
+                return $signal
+            }
+    
+            $context = @{}
+    
+            # ░▒▓█ REPLACEMENTS █▓▒░
+            $replacements = $graphsNode["replacements"]
             if ($replacements) {
-                $signal.Result.Replacements += (ConvertFrom-Json (ConvertTo-Json $replacements))
+                $context.Replacements += (ConvertFrom-Json (ConvertTo-Json $replacements))
             }
-
-            $tokenGraphList = (ConvertFrom-Json (ConvertTo-Json $importListDynamic)) ?? @()
-
-            if ($CircuitWireTokenGraphs) {
-                $overrideImportListDynamic = $CircuitWireTokenGraphs[$settings.ImportNodeName]
-                if ($overrideImportListDynamic) {
-                    $overrideImportList = (ConvertFrom-Json (ConvertTo-Json $overrideImportListDynamic))
-                    $tokenGraphList += ($overrideImportList ?? @())
-
-                    $overrideReplacements = $CircuitWireTokenGraphs["replacements"]
-                    if ($overrideReplacements) {
-                        $signal.Result.Replacements += (ConvertFrom-Json (ConvertTo-Json $overrideReplacements))
-                    }
+    
+            # ░▒▓█ IMPORT LIST █▓▒░
+            $importList = @(ConvertFrom-Json (ConvertTo-Json $importListRaw))
+    
+            # ░▒▓█ CIRCUIT OVERRIDES █▓▒░
+            if ($TokenGraphOverrides) {
+                $overrideImports = $TokenGraphOverrides[$settings.ImportNodeName]
+                if ($overrideImports) {
+                    $importList += @(ConvertFrom-Json (ConvertTo-Json $overrideImports))
+                }
+    
+                $overrideReplacements = $TokenGraphOverrides["replacements"]
+                if ($overrideReplacements) {
+                    $context.Replacements += (ConvertFrom-Json (ConvertTo-Json $overrideReplacements))
                 }
             }
-
-            foreach ($tokenGraph in ($tokenGraphList | Sort-Dictionary -Unique)) {
+    
+            # ░▒▓█ TOKEN GRAPH IMPORT █▓▒░
+            foreach ($tokenGraph in ($importList | Sort-Dictionary -Unique)) {
                 $relativePath = $tokenGraph.Replace("\", "/")
-                $fullPath = $relativePath
-                $adjustedBasePath = $baseImportPath
-
+                $adjustedBasePath = $tokenGraphRoot
+    
                 if ($relativePath.Contains("/")) {
                     $splitParts = $relativePath.Split("/")
                     $relativePath = $splitParts[-1]
-                    $adjustedBasePath = Join-Path -Path $baseImportPath -ChildPath ($fullPath.Replace($relativePath, ""))
+                    $adjustedBasePath = Join-Path -Path $tokenGraphRoot -ChildPath ($tokenGraph.Replace($relativePath, ""))
                 }
-
-                $tokenGraphResult = $this.ConduitJacket.MappedStorageService.ReadXmlXpath($relativePath, $null, $adjustedBasePath, $null, "Documents")
-
-                if ($signal.MergeSignalAndVerifySuccess($tokenGraphResult)) {
-                    $signal.Result.ContextNavigator[$relativePath] = $tokenGraphResult.Result.CreateNavigator()
+    
+                $graphSignal = $this.Conductor.MappedStorageService.ReadXmlXpath(
+                    $relativePath, $null, $adjustedBasePath, $null, "Documents"
+                )
+    
+                if ($signal.MergeSignalAndVerifySuccess(@($graphSignal))) {
+                    $context.ContextNavigator[$relativePath] = $graphSignal.GetResult().CreateNavigator()
                 } else {
-                    break
+                    $signal.LogCritical("Aborted graph loading due to failed resolution of: $relativePath")
+                    return $signal
                 }
             }
-        } catch {
-            $signal.LogCritical($_.Exception.Message)
+    
+            $signal.SetResult($context)
+            $signal.LogInformation("✅ Token context environment built successfully.")
         }
-
+        catch {
+            $signal.LogCritical("Unhandled exception in GetContext: $($_.Exception.Message)")
+        }
+    
         return $signal
     }
 }

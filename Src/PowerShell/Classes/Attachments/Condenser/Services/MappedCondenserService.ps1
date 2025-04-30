@@ -8,6 +8,7 @@ class MappedCondenserService {
         $this.Conductor = $Conductor
         $this.GlobalCondenser = [GlobalCondenserService]::new($this, $Conductor)
         $this.MergeCondenser = [MergeCondenserService]::new($this, $Conductor)
+        $this.MapCondenser = [MapCondenserService]::new($this, $Conductor)
         $this.GraphCondenser = [GraphCondenserService]::new($this)
     }
 

@@ -14,7 +14,7 @@ function Get-AgentForConductor {
 
     try {
         # Resolve the Agent
-        $Agent = Resolve-PathFromDictionary -Dictionary $Environment -Path "Agents.$AgentName"
+        $Agent = Resolve-PathFromDictionaryNoSignal -Dictionary $Environment -Path "Agents.$AgentName"
 
         if ($null -eq $Agent) {
             $signal.LogCritical("Agent '$AgentName' not found in Environment.")
@@ -22,7 +22,7 @@ function Get-AgentForConductor {
         }
 
         # Resolve the Role
-        $CurrentRole = Resolve-PathFromDictionary -Dictionary $Agent -Path "Roles.$RoleName"
+        $CurrentRole = Resolve-PathFromDictionaryNoSignal -Dictionary $Agent -Path "Roles.$RoleName"
 
         if ($null -eq $CurrentRole) {
             $signal.LogCritical("Role '$RoleName' not found for Agent '$AgentName'.")

@@ -9,6 +9,15 @@ function Convert-AgentAttachmentsToConductor {
 
     $signal = [Signal]::new("Convert-AgentAttachmentsToConductor")
 
+    function Add-AttachmentJacket {
+        param (
+            [string]$name,
+            [object]$jacket
+        )
+        Add-PathToDictionary -Dictionary $Conductor -Path "AttachmentJackets.$name" -Value $jacket | Out-Null
+        $signal.LogVerbose("Mapped Attachment Jacket: $name")
+    }
+
     try {
         if (-not $Agent) {
             $signal.LogCritical("Agent is null. Cannot process attachments.")
@@ -21,23 +30,27 @@ function Convert-AgentAttachmentsToConductor {
         }
 
         # Ensure AttachmentJackets memory exists
-        $attachmentJacketsSignal = Resolve-SignalPathFromDictionary -Dictionary $Conductor -Path "AttachmentJackets" | Select-Object -Last 1
-        $attachmentJackets = $attachmentJacketsSignal.Result
+        $attachmentJacketsSignal = Resolve-PathFromDictionary -Dictionary $Conductor -Path "AttachmentJackets"
+        $signal.MergeSignal(@($attachmentJacketsSignal))
+
+        $attachmentJackets = $attachmentJacketsSignal.GetResult()
 
         if ($null -eq $attachmentJackets) {
             $val = [System.Collections.Generic.List[object]]::new()
-            Add-PathToDictionary -Dictionary $Conductor -Path "AttachmentJackets" -Value $val
-            #$attachmentJackets = Resolve-PathFromDictionary -Dictionary $Conductor -Path "AttachmentJackets"
+            Add-PathToDictionary -Dictionary $Conductor -Path "AttachmentJackets" -Value $val | Out-Null
             $signal.LogVerbose("Initialized empty AttachmentJackets memory space on Conductor.")
         }
 
-        # Migrate Agent-level Attachment Jackets
-        $agentAttachments = Resolve-PathFromDictionary -Dictionary $Agent -Path "Attachments"
-        if ($agentAttachments) {
+        # ░▒▓█ AGENT ATTACHMENTS █▓▒░
+
+        $agentAttachmentsSignal = Resolve-PathFromDictionary -Dictionary $Agent -Path "Attachments"
+        $signal.MergeSignal(@($agentAttachmentsSignal))
+
+        if ($agentAttachmentsSignal.Success()) {
+            $agentAttachments = $agentAttachmentsSignal.GetResult()
             foreach ($attachmentJacket in $agentAttachments) {
                 if ($attachmentJacket.Name) {
-                    Add-PathToDictionary -Dictionary $Conductor -Path "AttachmentJackets.$($attachmentJacket.Name)" -Value $attachmentJacket
-                    $signal.LogVerbose("Mapped Agent Attachment Jacket: $($attachmentJacket.Name)")
+                    Add-AttachmentJacket -name $attachmentJacket.Name -jacket $attachmentJacket
                 } else {
                     $signal.LogWarning("Skipped Agent attachment jacket with missing name.")
                 }
@@ -47,13 +60,16 @@ function Convert-AgentAttachmentsToConductor {
             $signal.LogWarning("No Agent attachments found to migrate.")
         }
 
-        # Migrate CurrentRole-level Attachment Jackets
-        $roleAttachments = Resolve-PathFromDictionary -Dictionary $Agent -Path "Memory.CurrentRole.Attachments"
-        if ($roleAttachments) {
+        # ░▒▓█ ROLE ATTACHMENTS █▓▒░
+
+        $roleAttachmentsSignal = Resolve-PathFromDictionary -Dictionary $Agent -Path "CurrentRole.Attachments"
+        $signal.MergeSignal(@($roleAttachmentsSignal))
+
+        if ($roleAttachmentsSignal.Success()) {
+            $roleAttachments = $roleAttachmentsSignal.GetResult()
             foreach ($roleAttachmentJacket in $roleAttachments) {
                 if ($roleAttachmentJacket.Name) {
-                    Add-PathToDictionary -Dictionary $Conductor -Path "Memory.AttachmentJackets.$($roleAttachmentJacket.Name)" -Value $roleAttachmentJacket
-                    $signal.LogVerbose("Mapped Role Attachment Jacket: $($roleAttachmentJacket.Name)")
+                    Add-AttachmentJacket -name $roleAttachmentJacket.Name -jacket $roleAttachmentJacket
                 } else {
                     $signal.LogWarning("Skipped Role attachment jacket with missing name.")
                 }

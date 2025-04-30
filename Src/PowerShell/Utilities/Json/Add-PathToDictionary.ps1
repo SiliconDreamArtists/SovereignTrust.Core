@@ -117,7 +117,7 @@ function Add-PathToDictionary {
             }
         }
 
-        $signal.SetResult($true)
+        $signal.SetResult($Value)
         $signal.LogInformation("Path '$Path' successfully added to dictionary.")
     }
     catch {

@@ -1,3 +1,13 @@
+# =============================================================================
+# 📦 Context (Dimensional Input Surface)
+# =============================================================================
+# The Context object provides the dimensional memory input for a GraphCondenser.
+# It contains token graphs, replacement mappings, and override structures used
+# to hydrate or mutate an XML document. Built from user-defined configurations,
+# runtime values, or merged imports, the Context acts as a sovereign dimension
+# provider — defining what values, tokens, and memory overlays are allowed to
+# influence the condensation process. It is external, sharable, and recursive.
+
 class Context {
     [hashtable]$ContextDictionary
     [object[]]$Replacements

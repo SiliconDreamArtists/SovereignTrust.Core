@@ -13,7 +13,7 @@ function Resolve-RegexPlaceholders {
         $placeholder = $match.Value        # e.g., @@Item.Title
         $path = $match.Groups[1].Value     # e.g., Item.Title
 
-        $value = Resolve-PathFromDictionary -Dictionary $Merged -Path $path
+        $value = Resolve-PathFromDictionaryNoSignal -Dictionary $Merged -Path $path
 
         if ($null -ne $value) {
             if ($value -is [System.Collections.IEnumerable] -and -not ($value -is [string])) {

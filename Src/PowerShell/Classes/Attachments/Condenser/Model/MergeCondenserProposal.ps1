@@ -6,7 +6,7 @@ class MergeCondenserProposal {
     [string]$BaseToken
     [string]$BaseTokenBackup
     [string]$BaseNestPath
-    [object]$CondensedWire
+    [object]$TokenDocument
     [object]$BaseWire
     [object]$CircuitWire
     [string]$MergeArrayFormatType

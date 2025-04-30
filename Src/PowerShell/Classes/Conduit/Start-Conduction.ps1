@@ -23,8 +23,8 @@ function Start-Conduction {
 
     # (Optional) Engage transient/singleton type mappings
     if ($TransientTypeDictionary.Count -gt 0 -or $SingletonTypeDictionary.Count -gt 0) {
-        $conduit.EngageConduitJacket(
-            $null,  # No full ConduitJacket yet
+        $conduit.EngageConductor(
+            $null,  # No full Conductor yet
             $TransientTypeDictionary,
             $SingletonTypeDictionary
         )

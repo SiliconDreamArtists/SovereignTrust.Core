@@ -1,4 +1,4 @@
-#TODO Review if this can be done in Resolve-PathFromDictionary
+#TODO Review if this can be done in Resolve-PathFromDictionaryNoSignal
 #TODO This could be done like a single path and if it has a node that has a =, like .name=xyz. then it knows to check and array instead of dictionary path
 function Get-VirtualValueFromJson {
     param (

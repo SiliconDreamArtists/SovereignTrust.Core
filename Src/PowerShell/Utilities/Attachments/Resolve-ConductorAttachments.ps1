@@ -8,12 +8,12 @@ function Resolve-ConductorAttachments {
 
     try {
         # Resolve sovereign paths
-        $attachmentDictionary = Resolve-PathFromDictionary -Dictionary $Conductor -Path "Memory.Attachments"
-        $attachmentJacketList = Resolve-PathFromDictionary -Dictionary $Conductor -Path "Memory.AttachmentJackets"
+        $attachmentDictionary = Resolve-PathFromDictionaryNoSignal -Dictionary $Conductor -Path "Memory.Attachments"
+        $attachmentJacketList = Resolve-PathFromDictionaryNoSignal -Dictionary $Conductor -Path "Memory.AttachmentJackets"
 
         if ($null -eq $attachmentDictionary) {
             Add-PathToDictionary -Dictionary $Conductor -Path "Memory.Attachments" -Value @{}
-            $attachmentDictionary = Resolve-PathFromDictionary -Dictionary $Conductor -Path "Memory.Attachments"
+            $attachmentDictionary = Resolve-PathFromDictionaryNoSignal -Dictionary $Conductor -Path "Memory.Attachments"
             $signal.LogVerbose("Initialized missing AttachmentDictionary on Conductor.")
         }
 
@@ -24,8 +24,8 @@ function Resolve-ConductorAttachments {
 
         foreach ($jacket in $attachmentJacketList) {
             if ($null -ne $jacket) {
-                $name = Resolve-PathFromDictionary -Dictionary $jacket -Path "Name"
-                $type = Resolve-PathFromDictionary -Dictionary $jacket -Path "Type"
+                $name = Resolve-PathFromDictionaryNoSignal -Dictionary $jacket -Path "Name"
+                $type = Resolve-PathFromDictionaryNoSignal -Dictionary $jacket -Path "Type"
 
                 if ($name -and $type) {
                     $subSignal = Resolve-AttachmentFromJacket -Jacket $jacket

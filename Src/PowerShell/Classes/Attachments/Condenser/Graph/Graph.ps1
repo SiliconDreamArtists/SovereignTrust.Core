@@ -1,3 +1,14 @@
+
+# =============================================================================
+# 🧠 Graph (Working Memory + Condensation Output)
+# =============================================================================
+# The Graph object represents the live working memory during a condensation run.
+# It holds the parsed XML document (`XmlRepresentation`), tracks unresolved
+# mappings and structural anomalies, and logs the entire condensation lifecycle
+# through its internal Signal (`GraphSignal`). It is the ceremonial output of a
+# GraphCondenser — able to be persisted, reviewed, or executed upon. Graphs are
+# where dimensional input becomes applied memory, ready for sovereign evolution.
+
 class Graph {
     [object]$Metadata
     [object[]]$BlockContext

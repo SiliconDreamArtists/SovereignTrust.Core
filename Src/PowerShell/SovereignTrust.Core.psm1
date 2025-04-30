@@ -3,12 +3,12 @@
 . "$PSScriptRoot/Classes/Attachments/Condenser/JsonHelper.ps1"
 . "$PSScriptRoot/Classes/Attachments/MappedStorageAttachment.ps1"
 
+. "$PSScriptRoot/Classes/Conduit/Conduit.ps1"
 . "$PSScriptRoot/Classes/Conduction/Conduction.ps1"
 . "$PSScriptRoot/Classes/Conduction/ConductionFeedback.ps1"
 . "$PSScriptRoot/Classes/Conduction/ConductionResult.ps1"
 . "$PSScriptRoot/Classes/Conduction/Conductor.ps1"
 . "$PSScriptRoot/Classes/Conduit/Complete-Conduction.ps1"
-. "$PSScriptRoot/Classes/Conduit/Conduit.ps1"
 . "$PSScriptRoot/Classes/Conduit/Invoke-Conduction.ps1"
 . "$PSScriptRoot/Classes/Conduit/Start-Conduction.ps1"
 . "$PSScriptRoot/Classes/Memory/Jacket.ps1"
@@ -44,8 +44,8 @@
 . "$PSScriptRoot/Utilities/Json/Get-DictionaryValue.ps1"
 . "$PSScriptRoot/Utilities/Json/Get-VirtualValueFromJson.ps1"
 . "$PSScriptRoot/Utilities/Json/Load-JsonObjectFromFile.ps1"
+. "$PSScriptRoot/Utilities/Json/Resolve-PathFromDictionaryNoSignal.ps1"
 . "$PSScriptRoot/Utilities/Json/Resolve-PathFromDictionary.ps1"
-. "$PSScriptRoot/Utilities/Json/Resolve-SignalPathFromDictionary.ps1"
 . "$PSScriptRoot/Utilities/Json/Resolve-RegexPlaceholders.ps1"
 . "$PSScriptRoot/Utilities/Json/Set-DictionaryValue.ps1"
 
@@ -58,6 +58,6 @@ Export-ModuleMember -Function Convert-JsonToHashtable
 Export-ModuleMember -Function Get-DictionaryValue
 Export-ModuleMember -Function Get-VirtualValueFromJson
 Export-ModuleMember -Function Load-JsonObjectFromFile
-Export-ModuleMember -Function Resolve-PathFromDictionary
+Export-ModuleMember -Function Resolve-PathFromDictionaryNoSignal
 Export-ModuleMember -Function Resolve-RegexPlaceholders
 Export-ModuleMember -Function Set-DictionaryValue
