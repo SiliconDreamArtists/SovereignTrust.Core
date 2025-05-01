@@ -1,3 +1,21 @@
+# ░▒▓════════════════════════════════════════════════════════════════════▓▒░
+# File: Convert-AgentAttachmentsToConductor.ps1 • Project: SovereignTrust Core
+# License: MIT • Authors: Shadow PhanTom, Neural Alchemist • Generated: 2025-04-30
+# Lineage: SovereignTrust.Core.Attachments.Convert-AgentAttachmentsToConductor
+# ░▒▓════════════════════════════════════════════════════════════════════▓▒░
+# 🧠 SIGNAL USAGE EXEMPLAR
+# This file demonstrates the full spectrum of SovereignTrust signal recursion patterns:
+#   • 📦 Structured Signal creation, propagation, and conditional merging
+#   • 🔁 Flow-controlled MergeSignalAndVerifySuccess with optional mute gates
+#   • ❌ Critical logging for invalid invocation and halt conditions
+#   • 🛠 Recovery-based de-escalation via LogRecovery for self-healing surfaces
+#   • 🔕 Conditional muting of expected Criticals via LogMute (non-blocking trace carry)
+#   • 🧱 Sovereign-safe dictionary construction with signal-confirmed attachment
+#   • 📚 Result memory attachment and lineage export via SetResult
+#
+# ✅ Recommended as the reference exemplar for memory-driven initialization logic,
+#    and a canonical implementation of sovereign flow using living Signals.
+
 function Convert-AgentAttachmentsToConductor {
     param (
         [Parameter(Mandatory = $true)]
@@ -14,8 +32,12 @@ function Convert-AgentAttachmentsToConductor {
             [string]$name,
             [object]$jacket
         )
-        Add-PathToDictionary -Dictionary $Conductor -Path "AttachmentJackets.$name" -Value $jacket | Out-Null
-        $signal.LogVerbose("Mapped Attachment Jacket: $name")
+        $addSignal = Add-PathToDictionary -Dictionary $Conductor -Path "AttachmentJackets.$name" -Value $jacket | Select-Object -Last 1
+        if ($signal.MergeSignalAndVerifySuccess($addSignal)) {
+            $signal.LogVerbose("Mapped Attachment Jacket: $name")
+        } else {
+            $signal.LogWarning("Failed to map attachment jacket: $name")
+        }
     }
 
     try {
@@ -29,24 +51,20 @@ function Convert-AgentAttachmentsToConductor {
             return $signal
         }
 
-        # Ensure AttachmentJackets memory exists
-        $attachmentJacketsSignal = Resolve-PathFromDictionary -Dictionary $Conductor -Path "AttachmentJackets"
-        $signal.MergeSignal(@($attachmentJacketsSignal))
-
-        $attachmentJackets = $attachmentJacketsSignal.GetResult()
-
-        if ($null -eq $attachmentJackets) {
-            $val = [System.Collections.Generic.List[object]]::new()
-            Add-PathToDictionary -Dictionary $Conductor -Path "AttachmentJackets" -Value $val | Out-Null
-            $signal.LogVerbose("Initialized empty AttachmentJackets memory space on Conductor.")
+        # ░▒▓█ INITIALIZE ATTACHMENTJACKETS MEMORY █▓▒░
+        $attachmentJacketsSignal = Resolve-PathFromDictionary -Dictionary $Conductor -Path "AttachmentJackets" | Select-Object -Last 1
+        if (-not $signal.MergeSignalAndVerifySuccess($attachmentJacketsSignal)) {
+            $initSignal = Add-PathToDictionary -Dictionary $Conductor -Path "AttachmentJackets" -Value ([System.Collections.Generic.List[object]]::new()) | Select-Object -Last 1
+            if ($signal.MergeSignalAndVerifySuccess($initSignal)) {
+                $signal.LogRecovery("🔁 AttachmentJackets path was missing but was recovered via initialization.")
+            } else {
+                $signal.LogWarning("⚠️ Failed to initialize AttachmentJackets memory space.")
+            }
         }
 
         # ░▒▓█ AGENT ATTACHMENTS █▓▒░
-
-        $agentAttachmentsSignal = Resolve-PathFromDictionary -Dictionary $Agent -Path "Attachments"
-        $signal.MergeSignal(@($agentAttachmentsSignal))
-
-        if ($agentAttachmentsSignal.Success()) {
+        $agentAttachmentsSignal = Resolve-PathFromDictionary -Dictionary $Agent -Path "Attachments" | Select-Object -Last 1
+        if ($signal.MergeSignalAndVerifySuccess($agentAttachmentsSignal, $true, "Agent-level attachments are optional and were safely muted.")) {
             $agentAttachments = $agentAttachmentsSignal.GetResult()
             foreach ($attachmentJacket in $agentAttachments) {
                 if ($attachmentJacket.Name) {
@@ -56,16 +74,11 @@ function Convert-AgentAttachmentsToConductor {
                 }
             }
             $signal.LogInformation("Agent-level attachment jackets migrated to Conductor.")
-        } else {
-            $signal.LogWarning("No Agent attachments found to migrate.")
         }
 
         # ░▒▓█ ROLE ATTACHMENTS █▓▒░
-
-        $roleAttachmentsSignal = Resolve-PathFromDictionary -Dictionary $Agent -Path "CurrentRole.Attachments"
-        $signal.MergeSignal(@($roleAttachmentsSignal))
-
-        if ($roleAttachmentsSignal.Success()) {
+        $roleAttachmentsSignal = Resolve-PathFromDictionary -Dictionary $Agent -Path "CurrentRole.Attachments" | Select-Object -Last 1
+        if ($signal.MergeSignalAndVerifySuccess($roleAttachmentsSignal, $true, "Role-level attachments are optional and were safely muted.")) {
             $roleAttachments = $roleAttachmentsSignal.GetResult()
             foreach ($roleAttachmentJacket in $roleAttachments) {
                 if ($roleAttachmentJacket.Name) {
@@ -74,15 +87,13 @@ function Convert-AgentAttachmentsToConductor {
                     $signal.LogWarning("Skipped Role attachment jacket with missing name.")
                 }
             }
-            $signal.LogInformation("Role-level attachment jackets migrated to Conductor.")
-        } else {
-            $signal.LogWarning("No CurrentRole attachments found to migrate.")
+            $signal.LogRecovery("Role-level attachment jackets migrated to Conductor.")
         }
 
         $signal.SetResult($Conductor)
     }
     catch {
-        $signal.LogCritical("Unhandled critical failure in Convert-AgentAttachmentsToConductor: $_")
+        $signal.LogCritical("Unhandled critical failure in Convert-AgentAttachmentsToConductor: $($_.Exception.Message)")
     }
 
     return $signal

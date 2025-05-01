@@ -13,9 +13,9 @@
 
  Directory of C:\GitHub\SiliconDreamArtists\SovereignTrust.Core\Src\PowerShell\Classes\Attachments\Condenser
 
-04/27/2025  08:52 PM             1,223 GlobalCondenserFeedback.ps1
+04/27/2025  08:52 PM             1,223 GlobalCondenserSignal.ps1
 04/27/2025  06:32 PM               526 GlobalCondenserProposal.ps1
-04/27/2025  09:33 PM               173 MapCondenserFeedback.ps1
+04/27/2025  09:33 PM               173 MapCondenserSignal.ps1
 04/27/2025  09:33 PM               337 MapCondenserProposal.ps1
                4 File(s)          2,259 bytes
 
@@ -39,8 +39,8 @@
  Directory of C:\GitHub\SiliconDreamArtists\SovereignTrust.Core\Src\PowerShell\Classes\Conduction
 
 04/26/2025  09:13 PM                 0 Conduction.ps1
-04/26/2025  10:00 PM               972 ConductionFeedback.ps1
-04/26/2025  10:00 PM             1,064 ConductionResult.ps1
+04/26/2025  10:00 PM               972 ConductionSignal.ps1
+04/26/2025  10:00 PM             1,064 ConductionResultSignal.ps1
 04/27/2025  10:49 AM             2,371 Conductor.ps1
                4 File(s)          4,407 bytes
 

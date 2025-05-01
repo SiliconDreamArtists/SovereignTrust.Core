@@ -1,4 +1,4 @@
-class ConductionResult {
+class ConductionResultSignal {
     [Guid]$WireIdentifier
     [Guid]$Version
     [Guid]$TriggerIdentifier
@@ -10,18 +10,18 @@ class ConductionResult {
     [string]$ConductionName
     [System.Collections.Generic.List[string]]$ResultMessages
     [bool]$ConductionSuccessful
-    [bool]$ConductionResultSuccessful
+    [bool]$ConductionResultSignalSuccessful
     [string]$RelayName
-    [bool]$RelayConductionResult
+    [bool]$RelayConductionResultSignal
     [Guid]$ConductionIdentifier
     [Guid]$RelayConductionPlanVersion
 
-    ConductionResult() {
+    ConductionResultSignal() {
         # Default initialization
         $this.ResultMessages = New-Dictionary 'System.Collections.Generic.List[string]'
         $this.ConductionSuccessful = $false
-        $this.ConductionResultSuccessful = $false
-        $this.RelayConductionResult = $false
+        $this.ConductionResultSignalSuccessful = $false
+        $this.RelayConductionResultSignal = $false
     }
 
     [string] GetConductionStatusCode() {

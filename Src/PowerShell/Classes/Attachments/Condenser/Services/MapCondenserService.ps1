@@ -62,6 +62,8 @@ class MapCondenserService {
             'AtAttag'      { return @("@@$Tag") }
             default        { return @() }
         }
+
+        return @()
     }
 
     [string[]] GetVariableTags([string]$Content, [string]$Type) {
@@ -72,5 +74,7 @@ class MapCondenserService {
             'HashHashtag' { return [regex]::Matches($Content, "##[a-zA-Z0-9_.-]+") | ForEach-Object { $_.Value.Substring(2) } }
             default       { return @() }
         }
+ 
+        return @()
     }
 }

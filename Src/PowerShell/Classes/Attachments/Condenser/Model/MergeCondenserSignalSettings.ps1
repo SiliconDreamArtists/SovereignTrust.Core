@@ -1,11 +1,11 @@
-class MergeCondenserFeedbackSettings {
+class MergeCondenserSignalSettings {
     [string]$UnresolvedWireGlobalError
     [string]$UnresolvedWireLookupValueError
     [string]$UnresolvedContextGraphError
     [string]$UnresolvedContextValueError
     [string]$UnresolvedWireBlockError
 
-    MergeCondenserFeedbackSettings() {
+    MergeCondenserSignalSettings() {
         $this.UnresolvedWireGlobalError        = "Unresolved Wire Global: {0}"
         $this.UnresolvedWireLookupValueError   = "Unresolved Wire Lookup Value: {0}"
         $this.UnresolvedContextGraphError      = "Unresolved Context Graph: {0}"

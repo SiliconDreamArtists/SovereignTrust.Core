@@ -1,5 +1,7 @@
 class MappedCondenserService {
     [object]$GlobalCondenser
+    [object]$TokenCondenser
+    [object]$MapCondenser
     [object]$MergeCondenser
     [object]$GraphCondenser
     [object]$Conductor
@@ -8,6 +10,7 @@ class MappedCondenserService {
         $this.Conductor = $Conductor
         $this.GlobalCondenser = [GlobalCondenserService]::new($this, $Conductor)
         $this.MergeCondenser = [MergeCondenserService]::new($this, $Conductor)
+        $this.TokenCondenser = [TokenCondenserService]::new($this, $Conductor)
         $this.MapCondenser = [MapCondenserService]::new($this, $Conductor)
         $this.GraphCondenser = [GraphCondenserService]::new($this)
     }
@@ -16,6 +19,9 @@ class MappedCondenserService {
         $condenserService = switch ($Slot) {
             "GlobalCondenser" { $this.GlobalCondenser }
             "MergeCondenser" { $this.MergeCondenser }
+            "TokenCondenser" { $this.TokenCondenser }
+            "MapCondenser" { $this.MapCondenser }
+            "GraphCondenser" { $this.GraphCondenser }
             default { $this.GraphCondenser }
         }
 
@@ -31,6 +37,7 @@ class MappedCondenserService {
     # Optional Placeholder for future slot references
     static [hashtable] GetSlots() {
         return @{
+            MapCondenser = "MapCondenser"
             MergeCondenser = "MergeCondenser"
             GraphCondenser = "GraphCondenser"
             MiniGraphCondenser = "MiniGraphCondenser"

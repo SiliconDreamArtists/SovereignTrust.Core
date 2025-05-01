@@ -13,40 +13,52 @@ function Start-BondingConductor {
     $signal = [Signal]::new("Start-BondingConductor")
 
     try {
-        # Get the Agent and Role binding
+        # ░▒▓█ AGENT RESOLUTION █▓▒░
         $agentSignal = Get-AgentForConductor -Environment $Environment -AgentName $AgentName -RoleName $RoleName | Select-Object -Last 1
-        if ($signal.MergeSignalAndVerifyFailure(@($agentSignal))) {
-            $signal.LogCritical("Failed to resolve Agent and Role binding.")
+        if ($signal.MergeSignalAndVerifyFailure($agentSignal)) {
+            $signal.LogCritical("❌ Failed to resolve Agent and Role binding.")
             return $signal
         }
 
-        $PrimaryAgent = $agentSignal.Result
+        $PrimaryAgent = $agentSignal.GetResult()
 
-        # Generate a new Conductor instance
+        # ░▒▓█ CONDUCTOR INITIALIZATION █▓▒░
         $BondingConductor = [Conductor]::new([guid]::NewGuid().ToString())
-
-        # Assign properties
-        $BondingConductor.Environment    = $Environment
+        $BondingConductor.Environment     = $Environment
         $BondingConductor.AgentName       = $AgentName
         $BondingConductor.RoleName        = $RoleName
         $BondingConductor.PrimaryAgent    = $PrimaryAgent
         $BondingConductor.SecondaryAgents = [System.Collections.Generic.List[object]]::new()
         $BondingConductor.Status          = "Initializing"
 
-        $signal.LogInformation("BondingConductor created for Agent: $AgentName with Role: $RoleName.")
+        $signal.LogInformation("✅ BondingConductor created for Agent: $AgentName with Role: $RoleName.")
 
-        # Convert Agent Attachments
-        Convert-AgentAttachmentsToConductor -Agent $PrimaryAgent -Conductor $BondingConductor
+        # ░▒▓█ ATTACHMENT MAPPING █▓▒░
+        $attachSignal = Convert-AgentAttachmentsToConductor -Agent $PrimaryAgent -Conductor $BondingConductor | Select-Object -Last 1
+        if ($signal.MergeSignalAndVerifyFailure($attachSignal)) {
+            $signal.LogCritical("❌ Failed to map Agent/Role attachment jackets into Conductor.")
+            return $signal
+        }
 
-        $signal.LogInformation("Agent and Role attachment jackets mapped into BondingConductor.")
+        $signal.LogInformation("✅ Agent and Role attachment jackets mapped into BondingConductor.")
 
-        # Set output result
+        # ░▒▓█ ATTACHMENT RESOLUTION █▓▒░
+        $resolveSignal = Resolve-ConductorAttachments -Conductor $BondingConductor | Select-Object -Last 1
+        if ($signal.MergeSignalAndVerifyFailure($resolveSignal)) {
+            $signal.LogCritical("❌ Failed to resolve Conductor attachments.")
+            return $signal
+        }
+
+        $signal.LogInformation("✅ Conductor attachments resolved successfully.")
+
+
+        
+        # ░▒▓█ COMPLETION █▓▒░
         $signal.SetResult($BondingConductor)
-
-        $signal.LogInformation("Start-BondingConductor initialization completed successfully.")
+        $signal.LogInformation("🎯 Start-BondingConductor initialization completed successfully.")
     }
     catch {
-        $signal.LogCritical("Start-BondingConductor encountered a critical failure: $_")
+        $signal.LogCritical("🔥 Unhandled failure in Start-BondingConductor: $($_.Exception.Message)")
     }
 
     return $signal

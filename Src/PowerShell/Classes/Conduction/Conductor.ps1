@@ -3,7 +3,7 @@
 
 class Conductor {
     [string]$Id
-    [hashtable]$RunModel
+    [hashtable]$ContextModel
     [Conduit]$PrimaryConduit
     [hashtable]$MappedAttachments
     [hashtable]$Attachments

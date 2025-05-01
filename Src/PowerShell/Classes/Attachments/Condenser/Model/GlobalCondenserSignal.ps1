@@ -1,4 +1,4 @@
-class GlobalCondenserFeedback {
+class GlobalCondenserSignal {
     [System.Collections.ArrayList]$WireOutputDictionary
     [System.Collections.ArrayList]$WireMergeCondenserOutputDictionary
     [System.Collections.ArrayList]$WireGraphCondenserOutputDictionary
@@ -7,7 +7,7 @@ class GlobalCondenserFeedback {
 
     hidden [System.Collections.ArrayList]$_ResultOutputs
 
-    GlobalCondenserFeedback() {
+    GlobalCondenserSignal() {
         $this.WireOutputDictionary = [System.Collections.ArrayList]::new()
         $this.WireMergeCondenserOutputDictionary = [System.Collections.ArrayList]::new()
         $this.WireGraphCondenserOutputDictionary = [System.Collections.ArrayList]::new()

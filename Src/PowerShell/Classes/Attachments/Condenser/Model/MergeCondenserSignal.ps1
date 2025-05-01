@@ -1,4 +1,4 @@
-class MergeCondenserFeedback {
+class MergeCondenserSignal {
     [hashtable]$Context
     [object]$Settings
     [object[]]$UnresolvedWireGlobals
@@ -9,9 +9,9 @@ class MergeCondenserFeedback {
     [hashtable]$ContextGraphListDictionary
     [Signal]$Signal
 
-    MergeCondenserFeedback() {
+    MergeCondenserSignal() {
         $this.Context = @{}
-        $this.Settings = [MergeCondenserFeedbackSettings]::new()
+        $this.Settings = [MergeCondenserSignalSettings]::new()
         $this.UnresolvedWireGlobals = @()
         $this.UnresolvedWireLookupValues = @()
         $this.UnresolvedContextGraphs = @()

@@ -8,7 +8,7 @@ class Conduction {
     [Guid]$ConduitVersion
     [Guid]$ConduitIdentifier
     [Guid]$WireVersion
-    [Guid]$ConductionFeedbackIdentifier
+    [Guid]$ConductionSignalIdentifier
 
     [string]$ConductionCallId
     [string]$ConductionName
@@ -16,7 +16,7 @@ class Conduction {
     [string]$Result
     [string]$CreatedBy
     [string]$LastModifiedBy
-    [string]$ConductionFeedbackLevel
+    [string]$ConductionSignalLevel
 
     [datetime]$CreatedDate
     [datetime]$LastModifiedDate
@@ -26,8 +26,8 @@ class Conduction {
     [bool]$IsDeleted
     [bool]$IsReadOnly
 
-    [object]$ConductionFeedback
-    [object]$ConductionResult
+    [object]$ConductionSignal
+    [object]$ConductionResultSignal
 
     [Signal]$Signal
 

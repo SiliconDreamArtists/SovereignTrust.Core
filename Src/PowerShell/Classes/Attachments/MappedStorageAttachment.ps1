@@ -1,11 +1,12 @@
 class MappedStorageAttachment {
     [hashtable]$ServiceCollection
+    $MyName = "MappedStorageAttachment"
 
     MappedStorageAttachment() {
         $this.ServiceCollection = @{}
     }
 
-    [Signal] RegisterService([object]$storageService) {
+    [Signal] RegisterAttachment([object]$storageService) {
         $signal = [Signal]::new("Register-Service")
 
         try {

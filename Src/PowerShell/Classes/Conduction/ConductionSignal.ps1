@@ -1,13 +1,13 @@
-class ConductionFeedback {
+class ConductionSignal {
     [string]$CallStatusCode
     [datetime]$ConductionDate
     [Guid]$ConductionIdentifier
-    [object]$ConductionResult    
+    [object]$ConductionResultSignal    
     [Guid]$ConduitVersion
     [string]$ExternalCallResult
     [string]$ExternalCallId
     [Guid]$JacketIdentifier
-    [bool]$PersistConductionResult
+    [bool]$PersistConductionResultSignal
     [bool]$PerformRelay
     [Nullable[datetime]]$RejoinderStartDate
     [hashtable]$RelayData        
@@ -19,9 +19,9 @@ class ConductionFeedback {
     [Guid]$WireIdentifier
     [string]$WireName
 
-    ConductionFeedback() {
+    ConductionSignal() {
         # Default initialization
-        $this.PersistConductionResult = $false
+        $this.PersistConductionResultSignal = $false
         $this.PerformRelay = $true
         $this.SkipCheckingExternalCallResult = $false
         $this.RelayData = @{}

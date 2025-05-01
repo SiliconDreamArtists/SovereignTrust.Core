@@ -13,7 +13,7 @@ class TokenCondenserService {
         }
     }
 
-    [Signal] GetToken([string]$Value, $CondenserFeedback, [bool]$ThrowExceptionOnEmpty = $true, [int]$RetryAttempts = 2) {
+    [Signal] GetToken([string]$Value, $CondenserSignal, [bool]$ThrowExceptionOnEmpty = $true, [int]$RetryAttempts = 2) {
         $signal = [Signal]::new("GetToken:$Value")
     
         if ([string]::IsNullOrWhiteSpace($Value)) {
@@ -30,7 +30,7 @@ class TokenCondenserService {
         $tokenGraphFilePath = $Value.Substring(0, $firstLookup)
         $xpath = "/" + $Value.Substring($firstLookup).Replace(".", "/").Replace("[", "[@").Replace("[@@", "[@")
     
-        $matchingNavigators = $CondenserFeedback.Context.FindMatchingContextDictionary($tokenGraphFilePath)
+        $matchingNavigators = $CondenserSignal.Context.FindMatchingContextDictionary($tokenGraphFilePath)
         $signal.MergeSignal(@($matchingNavigators))
     
         $navigators = $matchingNavigators.GetResult()

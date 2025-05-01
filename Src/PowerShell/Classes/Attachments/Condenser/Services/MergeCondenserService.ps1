@@ -62,7 +62,7 @@ class MergeCondenserService {
     }
 
     [Signal] Condense([object]$StorageService, [MergeCondenserProposal]$Proposal, [string]$OverrideGraphVirtualPath = $null, [bool]$ReturnRequiredValues = $false) {
-        $feedback = [MergeCondenserFeedback]::new()
+        $feedback = [MergeCondenserSignal]::new()
         $feedback.LogInformation("Condense Started")
 
         try {
@@ -102,7 +102,7 @@ class MergeCondenserService {
         return $feedback
     }
 
-    [Signal] ReplaceTagValues([MergeCondenserProposal]$Proposal, [MergeCondenserFeedback]$Feedback, [object]$GlobalGraph, [bool]$ReturnRequiredValues) {
+    [Signal] ReplaceTagValues([MergeCondenserProposal]$Proposal, [MergeCondenserSignal]$Feedback, [object]$GlobalGraph, [bool]$ReturnRequiredValues) {
         $signal = [Signal]::Start([CondenserGraphHelper]::BuildGraph($GlobalGraph))
 
         if ($Proposal.ModifyJContext) {
@@ -120,7 +120,7 @@ class MergeCondenserService {
         return $signal
     }
 
-    [Signal] ReplaceServiceTokens([object]$CondensedTokenGraph, [MergeCondenserFeedback]$Feedback, [object]$OverloadTokens, [string]$OverrideGraphVirtualPath = $null, [bool]$ReturnRequiredValues = $false) {
+    [Signal] ReplaceServiceTokens([object]$CondensedTokenGraph, [MergeCondenserSignal]$Feedback, [object]$OverloadTokens, [string]$OverrideGraphVirtualPath = $null, [bool]$ReturnRequiredValues = $false) {
         $signal = [Signal]::Start()
 
         try {

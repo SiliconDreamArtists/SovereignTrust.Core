@@ -1,9 +1,9 @@
-class GraphCondenserFeedback {
+class GraphCondenserSignal {
     [Graph]$Graph
     [object]$Context
     [hashtable]$Feedback
 
-    GraphCondenserFeedback() {
+    GraphCondenserSignal() {
         $this.Feedback = @{}
     }
 }

@@ -14,7 +14,7 @@ function Resolve-PathFromDictionary {
 
         foreach ($part in $parts) {
             if ($null -eq $current) {
-                $signal.LogWarning("Current object is null while traversing path segment '$part'.")
+                $signal.LogCritical("Current object is null while traversing path segment '$part'.")
                 return $signal
             }
 
@@ -42,7 +42,7 @@ function Resolve-PathFromDictionary {
                 if ($current.Contains($part)) {
                     $current = $current[$part]
                 } else {
-                    $signal.LogWarning("Hashtable segment missing key '$part'.")
+                    $signal.LogCritical("Hashtable segment missing key '$part'.")
                     return $signal
                 }
             }
@@ -50,7 +50,7 @@ function Resolve-PathFromDictionary {
                 if ($current.PSObject.Properties.Name -contains $part) {
                     $current = $current.$part
                 } else {
-                    $signal.LogWarning("PSCustomObject segment missing property '$part'.")
+                    $signal.LogCritical("PSCustomObject segment missing property '$part'.")
                     return $signal
                 }
             }
@@ -66,19 +66,19 @@ function Resolve-PathFromDictionary {
                 if ($found) {
                     $current = $found
                 } else {
-                    $signal.LogWarning("Array segment missing item with Name '$part'.")
+                    $signal.LogCritical("Array segment missing item with Name '$part'.")
                     return $signal
                 }
             }
             elseif ($current.GetType().IsClass -and $current.GetType().Namespace -ne "System") {
                 $propInfo = $current.GetType().GetProperty($part)
                 if ($null -eq $propInfo) {
-                    $signal.LogWarning("Class $($current.GetType().Name) does not have a property named '$part'.")
+                    $signal.LogCritical("Class $($current.GetType().Name) does not have a property named '$part'.")
                     return $signal
                 }
                 $next = $propInfo.GetValue($current, $null)
                 if ($null -eq $next) {
-                    $signal.LogWarning("Property '$part' is null in class $($current.GetType().Name).")
+                    $signal.LogCritical("Property '$part' is null in class $($current.GetType().Name).")
                     return $signal
                 }
                 $current = $next
