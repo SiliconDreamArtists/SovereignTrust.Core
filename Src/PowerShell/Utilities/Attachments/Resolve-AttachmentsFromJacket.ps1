@@ -7,53 +7,35 @@ function Resolve-AttachmentFromJacket {
         [object]$Jacket
     )
 
-    $signal = [Signal]::new("ResolveAttachment")
+    $signal = [Signal]::new("ResolveAttachment:$($Jacket.Name)")
 
     try {
-        # ░▒▓█ RESOLVE JACKETS █▓▒░
-        $typeSignal = Resolve-PathFromDictionary -Dictionary $Jacket -Path "Type"            | Select-Object -Last 1
-        $addressSignal = Resolve-PathFromDictionary -Dictionary $Jacket -Path "Address"         | Select-Object -Last 1
-        $assemblySignal = Resolve-PathFromDictionary -Dictionary $Jacket -Path "Assembly"        | Select-Object -Last 1
-        $sourceSignal = Resolve-PathFromDictionary -Dictionary $Jacket -Path "AssemblySource"  | Select-Object -Last 1
+        # ░▒▓█ RESOLVE VIRTUAL PATH █▓▒░
+        $virtualPathSignal = Resolve-PathFromDictionary -Dictionary $Jacket -Path "VirtualPath" | Select-Object -Last 1
+        if ($signal.MergeSignalAndVerifyFailure($virtualPathSignal)) {
+            $signal.LogCritical("❌ Jacket is missing a valid VirtualPath.")
+            return $signal
+        }
 
-        if ($signal.MergeSignalAndVerifyFailure(@($typeSignal, $addressSignal, $assemblySignal))) {
-            $signal.LogCritical("❌ One or more required jacket fields (Type, Address, Assembly) are missing.")
+        $wirePath = $virtualPathSignal.GetResult()
+
+        # ░▒▓█ LOAD MODULE MANIFEST GRAPH █▓▒░
+        $manifestSignal = Resolve-DependencyModuleFromGraph -ConductionContext $ConductionContext -WirePath $wirePath | Select-Object -Last 1
+        if ($signal.MergeSignalAndVerifyFailure($manifestSignal)) {
+            $signal.LogCritical("❌ Failed to load manifest from WirePath: $wirePath")
+            return $signal
+        }
+
+        $manifest = $manifestSignal.GetResult()
+
+        # ░▒▓█ RESOLVE CLASS TYPE FROM MANIFEST █▓▒░
+        $typeSignal = Resolve-PathFromDictionary -Dictionary $manifest -Path "Classes.0.Name" | Select-Object -Last 1
+        if ($signal.MergeSignalAndVerifyFailure($typeSignal)) {
+            $signal.LogCritical("❌ Class name missing in manifest.")
             return $signal
         }
 
         $typeName = $typeSignal.GetResult()
-        $address = $addressSignal.GetResult()
-        $assembly = $assemblySignal.GetResult()
-        $sourceFolder = $sourceSignal.GetResult()
-
-        # ░▒▓█ MODULE LOAD █▓▒░
-        $importSignal = [Signal]::new("ImportModule:$assembly")
-
-        try {
-            if ($sourceFolder) {
-                $fullPath = Join-Path $sourceFolder "$assembly.psd1"
-                if (Test-Path $fullPath) {
-                    Import-Module $fullPath -ErrorAction Stop
-                    $importSignal.LogInformation("✅ Assembly '$assembly' loaded from override path '$sourceFolder'.")
-                }
-                else {
-                    $importSignal.LogWarning("⚠️ AssemblySource specified but '$fullPath' not found — falling back.")
-                    Import-Module -Name $assembly -ErrorAction Stop
-                    $importSignal.LogInformation("✅ Assembly '$assembly' loaded via fallback to standard module path.")
-                }
-            }
-            else {
-                Import-Module -Name $assembly -ErrorAction Stop
-                $importSignal.LogInformation("✅ Assembly '$assembly' loaded from default module path.")
-            }
-        }
-        catch {
-            $importSignal.LogCritical("❌ Failed to load PowerShell module '$assembly': $($_.Exception.Message)")
-        }
-
-        if ($signal.MergeSignalAndVerifyFailure($importSignal)) {
-            return $signal
-        }
 
         # ░▒▓█ INSTANCE CREATION █▓▒░
         try {
@@ -64,36 +46,26 @@ function Resolve-AttachmentFromJacket {
             return $signal
         }
 
-        if ($null -eq $instance) {
-            $instance = [Activator]::CreateInstance($type)
-            if ($null -eq $instance) {
-                $signal.LogCritical("❌ Failed to instantiate type '$typeName'.")
-                return $signal
-            }
-        }
-
-        # ░▒▓█ INITIALIZATION █▓▒░
-        if ($null -ne $instance -and ($instance | Get-Member -Name "Construct" -MemberType Method)) {
+        # ░▒▓█ CONSTRUCT METHOD (OPTIONAL) █▓▒░
+        if ($instance -and ($instance | Get-Member -Name "Construct" -MemberType Method)) {
             $constructCall = $instance.Construct($Jacket)
             $constructSignal = $constructCall | Select-Object -Last 1
-        
+
             if ($signal.MergeSignalAndVerifySuccess($constructSignal)) {
-                $signal.LogInformation("✅ Attachment '$($Jacket.Name)' constructed with jacket data.")
+                $signal.LogInformation("✅ Attachment '$($Jacket.Name)' constructed successfully.")
+            } else {
+                $signal.LogWarning("⚠️ Construct() failed on attachment '$($Jacket.Name)'.")
             }
-            else {
-                $signal.LogWarning("⚠️ Attachment '$($Jacket.Name)' was instantiated but failed Construct() step.")
-            }
+        } else {
+            $signal.LogVerbose("No Construct() method found for '$($Jacket.Name)'. Proceeding without initialization.")
         }
-        else {
-            $signal.LogVerbose("Attachment '$($Jacket.Name)' created without Construct() method present.")
-        }
-        
+
         # ░▒▓█ RESULT █▓▒░
         $signal.SetResult($instance)
         $signal.LogInformation("📦 Attachment '$($Jacket.Name)' resolved and returned successfully.")
     }
     catch {
-        $signal.LogCritical("🔥 Unhandled exception resolving attachment: $($_.Exception.Message)")
+        $signal.LogCritical("🔥 Unhandled exception during attachment resolution: $($_.Exception.Message)")
     }
 
     return $signal

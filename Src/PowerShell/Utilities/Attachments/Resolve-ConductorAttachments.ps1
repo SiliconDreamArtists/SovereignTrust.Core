@@ -30,31 +30,31 @@ function Resolve-ConductorAttachments {
             if ($null -ne $jacket) {
 
                 $nameSignal = Resolve-PathFromDictionary -Dictionary $jacket -Path "Name" | Select-Object -Last 1
-                $typeSignal = Resolve-PathFromDictionary -Dictionary $jacket -Path "Type" | Select-Object -Last 1
-                $signal.MergeSignal(@($nameSignal, $typeSignal))
 
-                if ($nameSignal.Success() -and $typeSignal.Success()) {
+                if ($signal.MergeSignalAndVerifySuccess($nameSignal)) {
                     $name = $nameSignal.GetResult()
-                    $resolveSignal = Resolve-AttachmentFromJacket -Jacket $jacket | Select-Object -Last 1
-
+                
+                    $resolveSignal = Resolve-AttachmentFromJacket -ConductionContext $Conductor -Jacket $jacket | Select-Object -Last 1
+                
                     if ($signal.MergeSignalAndVerifySuccess($resolveSignal)) {
                         $resolvedAttachment = $resolveSignal.GetResult()
-                        #$addSignal = Add-PathToDictionary -Dictionary $Conductor -Path "Attachments.$name" -Value $resolvedAttachment | Select-Object -Last 1
-
+                        $resolvedType = $resolvedAttachment.GetType().Name
+                        $signal.LogVerbose("Attachment '$name' resolved as type '$resolvedType'.")
+                
                         $addSignal = Register-AttachmentToMappedSlot -Conductor $Conductor -Attachment $resolvedAttachment | Select-Object -Last 1
-                        
+                
                         if ($signal.MergeSignalAndVerifySuccess($addSignal)) {
-                            $signal.LogInformation("Attachment '$name' resolved and mounted.")
+                            $signal.LogInformation("Attachment '$name' mounted successfully.")
                         } else {
-                            $signal.LogWarning("Failed to mount resolved attachment '$name' into Conductor memory.")
+                            $signal.LogWarning("Failed to mount '$name' into Conductor memory.")
                         }
                     } else {
-                        $signal.LogWarning("Attachment '$name' failed during resolution phase.")
+                        $signal.LogWarning("Attachment '$name' failed resolution.")
                     }
                 } else {
-                    $signal.LogWarning("Skipped unresolved jacket (Name or Type missing).")
+                    $signal.LogWarning("Skipped jacket — 'Name' field unresolved.")
                 }
-
+                
             } else {
                 $signal.LogWarning("Null jacket encountered during iteration — skipping.")
             }

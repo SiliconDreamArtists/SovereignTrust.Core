@@ -10,11 +10,13 @@ class Graph {
     [object]$Environment
     [Signal]$GraphSignal
     [ordered]$SignalGrid
+    [ordered]$_Memory
 
     Graph([object]$environment) {
         $this.Environment = $environment
         $this.GraphSignal = [Signal]::new("GraphSignal")
         $this.SignalGrid = [ordered]@{}
+        $this._Memory = $this.SignalGrid
     }
 
     [void] Start() {
@@ -25,7 +27,7 @@ class Graph {
         $this.GraphSignal.LogInformation("✅ Graph condensation finalized. Total Signals: $($this.SignalGrid.Count)")
     }
 
-    [void] RegisterNewSignal([string]$Key, [Signal]$Signal) {
+    [void] RegisterSignal([string]$Key, [Signal]$Signal) {
         if ($this.SignalGrid.Contains($Key)) {
             $this.GraphSignal.LogWarning("⚠️ Overwriting existing signal at key: $Key")
         }
@@ -39,6 +41,46 @@ class Graph {
             $this.GraphSignal.LogVerbose("🔓 Signal unregistered at key: $Key")
         } else {
             $this.GraphSignal.LogWarning("⚠️ Attempted to unregister missing signal at key: $Key")
+        }
+    }
+
+    [string] ToJson([bool]$IgnoreInternalObjects = $false) {
+        $signal = [Signal]::new("Graph.ToJson")
+    
+        try {
+            $jsonObjectSignal = Convert-GraphToJsonObject -Graph $this -IgnoreInternalObjects:$IgnoreInternalObjects | Select-Object -Last 1
+            if ($signal.MergeSignalAndVerifyFailure($jsonObjectSignal)) {
+                $signal.LogCritical("❌ Failed to convert Graph to JSON object.")
+                return $null
+            }
+    
+            $json = $jsonObjectSignal.GetResult() | ConvertTo-Json -Depth 25
+            return $json
+        }
+        catch {
+            $signal.LogCritical("🔥 Exception during Graph.ToJson(): $($_.Exception.Message)")
+            return $null
+        }
+    }
+    
+    static [Graph] FromJson([string]$json, [bool]$IgnoreInternalObjects = $false) {
+        $signal = [Signal]::new("Graph.FromJson")
+    
+        try {
+            $jsonObject = $json | ConvertFrom-Json -Depth 25
+            $_graphSignal = Convert-JsonObjectToGraph -JsonObject $jsonObject -IgnoreInternalObjects:$IgnoreInternalObjects | Select-Object -Last 1
+    
+            if ($signal.MergeSignalAndVerifyFailure($_graphSignal)) {
+                $signal.LogCritical("❌ Failed to reconstruct Graph from JSON object.")
+                return $null
+            }
+    
+            $graph = $_graphSignal.GetResult()
+            return $graph
+        }
+        catch {
+            $signal.LogCritical("🔥 Exception during Graph.FromJson(): $($_.Exception.Message)")
+            return $null
         }
     }
 }

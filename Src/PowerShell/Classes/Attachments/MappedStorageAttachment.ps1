@@ -1,31 +1,51 @@
+<#
+================================================================================
+📦 MappedStorageAttachment • AI Trainer Block (Doctrine v1.0)
+================================================================================
+
+MappedStorageAttachment is the sovereign abstraction layer for accessing
+memory-bearing storage services. It is responsible for routing all storage
+requests — such as loading JSON, XML, text, deleting files, or listing folders —
+through a signal-aware fallback mechanism across all registered services.
+
+This abstraction obeys the SovereignTrust Doctrine:
+
+🧠 Memory is Sovereign.
+Storage is not assumed. Each request resolves through the memory space 
+of attached services, each carrying its own jacket, slot, and lineage.
+
+📡 Signals are Living.
+All operations return Signals — traceable, mergeable, and idempotent.
+Failures are not silent. All fallback is logged and lineage-aware.
+
+🔁 Attachments are Evolving.
+Each registered service is a dynamic attachment. Services can be replaced,
+mutated, or upgraded without altering the conduction flow above.
+
+♾️ Recursion is Home.
+This object can defer to its owning Conductor. The Conductor can fall back
+to its HostConductor. Together, they form the recursive memory fabric that
+bootstraps Sovereign execution.
+
+MappedStorageAttachment enables runtime access to all sovereign plans,
+templates, modules, and data — using only memory and WirePath.
+
+> “When memory becomes sovereign, storage becomes signal.”
+
+#>
+
 class MappedStorageAttachment {
+    [Conductor]$Conductor
     [hashtable]$ServiceCollection
     $MyName = "MappedStorageAttachment"
 
-    MappedStorageAttachment() {
+    MappedStorageAttachment([Conductor]$conductor) {
         $this.ServiceCollection = @{}
+        $this.Conductor = $conductor
     }
 
-    [Signal] RegisterAttachment([object]$storageService) {
-        $signal = [Signal]::new("Register-Service")
-
-        try {
-            if ($null -eq $storageService) {
-                return $signal.LogCritical("Cannot register null storage service.")
-            }
-
-            if (-not $this.ServiceCollection.ContainsKey($storageService)) {
-                $this.ServiceCollection[$storageService] = $storageService.Jacket?.Slot
-                $signal.LogInformation("Storage service registered successfully.")
-            } else {
-                $signal.LogWarning("Storage service already registered.")
-            }
-        }
-        catch {
-            $signal.LogCritical("Error registering storage service: $_")
-        }
-
-        return $signal
+    [Signal] RegisterAttachment([object]$service) {
+        return Register-MappedAttachment -ServiceCollection $this.ServiceCollection -Attachment $service -Label "StorageService"
     }
 
     [Signal] ReadObjectAsJson([string]$folder, [string]$fileName) {

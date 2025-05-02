@@ -18,30 +18,54 @@ function Resolve-PathFromDictionary {
                 return $signal
             }
 
+            # ░▒▓█ POINTER DEREFERENCE █▓▒░
+            if ($part -eq "*") {
+                if ($current -is [Signal] -and $current.PSObject.Properties["Pointer"]) {
+                    $current = $current.Pointer
+                    $signal.LogVerbose("🔗 Dereferenced *Pointer in signal.")
+                    continue
+                }
+                else {
+                    $signal.LogCritical("❌ '*' used but no Pointer found in current object.")
+                    return $signal
+                }
+            }
+
+            # ░▒▓█ INTERNAL DESCENT █▓▒░
             if ($IgnoreInternalObjects) {
                 if ($current -is [hashtable]) {
                     foreach ($key in @($current.Keys)) {
                         if ($key.StartsWith($InternalObjectsPrefix)) {
-                            $current.Remove($key)
+                            $current = $current[$key]
+                            break
                         }
                     }
                 }
                 elseif ($current -is [pscustomobject]) {
-                    foreach ($prop in @($current.PSObject.Properties)) {
+                    foreach ($prop in $current.PSObject.Properties) {
                         if ($prop.Name.StartsWith($InternalObjectsPrefix)) {
-                            $current.PSObject.Properties.Remove($prop.Name)
+                            $current = $prop.Value
+                            break
                         }
                     }
                 }
+                elseif ($current -is [Graph]) {
+                    $current = $current.SignalGrid
+                }
+                elseif ($current -is [Signal]) {
+                    $current = $current.GetResult()
+                }
             }
 
+            # ░▒▓█ PATH SEGMENT TRAVERSAL █▓▒░
             if ($current -is [System.Collections.IDictionary] -and $current.Contains($part)) {
                 $current = $current[$part]
             }
             elseif ($current -is [hashtable]) {
                 if ($current.Contains($part)) {
                     $current = $current[$part]
-                } else {
+                }
+                else {
                     $signal.LogCritical("Hashtable segment missing key '$part'.")
                     return $signal
                 }
@@ -49,7 +73,8 @@ function Resolve-PathFromDictionary {
             elseif ($current -is [pscustomobject]) {
                 if ($current.PSObject.Properties.Name -contains $part) {
                     $current = $current.$part
-                } else {
+                }
+                else {
                     $signal.LogCritical("PSCustomObject segment missing property '$part'.")
                     return $signal
                 }
@@ -65,7 +90,8 @@ function Resolve-PathFromDictionary {
 
                 if ($found) {
                     $current = $found
-                } else {
+                }
+                else {
                     $signal.LogCritical("Array segment missing item with Name '$part'.")
                     return $signal
                 }
