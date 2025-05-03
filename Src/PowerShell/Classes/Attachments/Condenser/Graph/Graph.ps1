@@ -70,7 +70,25 @@ class Graph {
         $this.ControlSignal.MergeSignal($resultSignal)
         return $this.RegisterSignal($Key, $resultSignal)
     }
-    
+
+    [object[]] GetKeys() {
+        return $this.SignalGrid.Keys
+    }
+
+    [Signal] Resolve([string]$Key) {
+        $signal = [Signal]::new("Graph.Resolve:$Key")
+
+        if ($this.SignalGrid.Contains($Key)) {
+            $resolved = $this.SignalGrid[$Key]
+            $signal.SetResult($resolved.GetResult())
+            $signal.LogInformation("✅ Resolved signal at key '$Key'.")
+        } else {
+            $signal.LogWarning("⚠️ No signal registered at key '$Key'.")
+        }
+
+        return $signal
+    }
+
     [string] ToJson([bool]$IgnoreInternalObjects = $false) {
         $signal = [Signal]::new("Graph.ToJson")
     
@@ -89,7 +107,7 @@ class Graph {
             return $null
         }
     }
-    
+
     static [Signal] FromJson([string]$json, [bool]$IgnoreInternalObjects = $false) {
         $signal = [Signal]::new("Graph.FromJson")
     
@@ -113,7 +131,7 @@ class Graph {
             $signal.LogCritical("🔥 Exception in Graph.FromJson: $($_.Exception.Message)")
             $signal.IsTerminal = $true
         }
-    
+
         return $signal
     }
 }

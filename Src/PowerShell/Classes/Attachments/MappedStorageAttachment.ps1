@@ -33,31 +33,43 @@ templates, modules, and data — using only memory and WirePath.
 > “When memory becomes sovereign, storage becomes signal.”
 
 #>
-
 class MappedStorageAttachment {
     [object]$Conductor
-    [hashtable]$ServiceCollection
+    [object]$Environment
+    [Graph]$ServiceCollection
     $MyName = "MappedStorageAttachment"
 
     MappedStorageAttachment([object]$conductor) {
-        $this.ServiceCollection = @{}
         $this.Conductor = $conductor
+
+        $envSignal = Resolve-PathFromDictionary -Dictionary $conductor -Path "Environment" | Select-Object -Last 1
+        if ($envSignal.Failure()) {
+            throw "❌ Unable to resolve Environment from Conductor."
+        }
+
+        $this.Environment = $envSignal.GetResult()
+        $this.ServiceCollection = [Graph]::new($this.Environment)
     }
 
     [Signal] RegisterAttachment([object]$service) {
-        return Register-MappedAttachment -ServiceCollection $this.ServiceCollection -Attachment $service -Label "StorageService"
+        return Register-MappedAttachment -ServiceCollection $this.ServiceCollection -Attachment $service -Label "StorageService" | Select-Object -Last 1
     }
 
     [Signal] ReadObjectAsJson([string]$folder, [string]$fileName) {
         $signal = [Signal]::new("ReadObjectAsJson")
 
-        foreach ($service in $this.ServiceCollection.Keys) {
-            $result = $service.ReadObjectAsJson($folder, $fileName)
-            $signal.MergeSignal(@($result))
+        foreach ($key in $this.ServiceCollection.SignalGrid.Keys) {
+            $serviceSignal = $this.ServiceCollection.SignalGrid[$key]
+            $service = $serviceSignal.GetResult()
 
-            if ($result.Success()) {
-                $signal.SetResult($result.GetResult())
-                break
+            if ($service -and ($service | Get-Member -Name "ReadObjectAsJson")) {
+                $result = $service.ReadObjectAsJson($folder, $fileName)
+                $signal.MergeSignal(@($result))
+
+                if ($result.Success()) {
+                    $signal.SetResult($result.GetResult())
+                    break
+                }
             }
         }
 
@@ -71,13 +83,18 @@ class MappedStorageAttachment {
     [Signal] ReadObjectAsXml([string]$folder, [string]$fileName) {
         $signal = [Signal]::new("ReadObjectAsXml")
 
-        foreach ($service in $this.ServiceCollection.Keys) {
-            $result = $service.ReadObjectAsXml($folder, $fileName)
-            $signal.MergeSignal(@($result))
+        foreach ($key in $this.ServiceCollection.SignalGrid.Keys) {
+            $serviceSignal = $this.ServiceCollection.SignalGrid[$key]
+            $service = $serviceSignal.GetResult()
 
-            if ($result.Success()) {
-                $signal.SetResult($result.GetResult())
-                break
+            if ($service -and ($service | Get-Member -Name "ReadObjectAsXml")) {
+                $result = $service.ReadObjectAsXml($folder, $fileName)
+                $signal.MergeSignal(@($result))
+
+                if ($result.Success()) {
+                    $signal.SetResult($result.GetResult())
+                    break
+                }
             }
         }
 
@@ -91,13 +108,18 @@ class MappedStorageAttachment {
     [Signal] DeleteFile([string]$folder, [string]$fileName) {
         $signal = [Signal]::new("DeleteFile")
 
-        foreach ($service in $this.ServiceCollection.Keys) {
-            $result = $service.DeleteFile($folder, $fileName)
-            $signal.MergeSignal(@($result))
+        foreach ($key in $this.ServiceCollection.SignalGrid.Keys) {
+            $serviceSignal = $this.ServiceCollection.SignalGrid[$key]
+            $service = $serviceSignal.GetResult()
 
-            if ($result.Success()) {
-                $signal.SetResult($result.GetResult())
-                break
+            if ($service -and ($service | Get-Member -Name "DeleteFile")) {
+                $result = $service.DeleteFile($folder, $fileName)
+                $signal.MergeSignal(@($result))
+
+                if ($result.Success()) {
+                    $signal.SetResult($result.GetResult())
+                    break
+                }
             }
         }
 
@@ -111,13 +133,18 @@ class MappedStorageAttachment {
     [Signal] ListDirectoryObjects([string]$folder) {
         $signal = [Signal]::new("ListDirectoryObjects")
 
-        foreach ($service in $this.ServiceCollection.Keys) {
-            $result = $service.ListDirectoryObjects($folder)
-            $signal.MergeSignal(@($result))
+        foreach ($key in $this.ServiceCollection.SignalGrid.Keys) {
+            $serviceSignal = $this.ServiceCollection.SignalGrid[$key]
+            $service = $serviceSignal.GetResult()
 
-            if ($result.Success()) {
-                $signal.SetResult($result.GetResult())
-                break
+            if ($service -and ($service | Get-Member -Name "ListDirectoryObjects")) {
+                $result = $service.ListDirectoryObjects($folder)
+                $signal.MergeSignal(@($result))
+
+                if ($result.Success()) {
+                    $signal.SetResult($result.GetResult())
+                    break
+                }
             }
         }
 

@@ -41,7 +41,6 @@ function Resolve-ConductorAttachments {
                         $resolvedType = $resolvedAttachment.GetType().Name
                         $signal.LogVerbose("Attachment '$name' resolved as type '$resolvedType'.")
                 
-                        $mergeCondenserSignal = Resolve-PathFromDictionary -Dictionary $Conductor -Path "MappedAttachments.Condenser.MergeCondenser" | Select-Object -Last 1
                         $addSignal = Register-AttachmentToMappedSlot -Conductor $Conductor -Attachment $resolveSignal | Select-Object -Last 1
                 
                         if ($signal.MergeSignalAndVerifySuccess($addSignal)) {

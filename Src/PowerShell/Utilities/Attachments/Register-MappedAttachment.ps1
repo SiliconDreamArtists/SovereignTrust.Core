@@ -1,6 +1,6 @@
 function Register-MappedAttachment {
     param (
-        [Parameter(Mandatory)][hashtable]$ServiceCollection,
+        [Parameter(Mandatory)][Graph]$ServiceCollection,
         [Parameter(Mandatory)][object]$Attachment,
         [string]$Label = "Attachment"
     )
@@ -11,14 +11,38 @@ function Register-MappedAttachment {
         if ($null -eq $Attachment) {
             return $signal.LogCritical("❌ Cannot register null $Label.")
         }
-
-        if (-not $ServiceCollection.ContainsKey($Attachment)) {
-            $ServiceCollection[$Attachment] = $Attachment.Jacket?.Slot
-            $signal.LogInformation("✅ $Label registered successfully.")
+        
+        # ░▒▓█ EXTRACT SLOT FROM JACKET █▓▒░
+        $slotSignal = Resolve-PathFromDictionary -Dictionary $Attachment -Path "Jacket.Slot" | Select-Object -Last 1
+        if ($signal.MergeSignalAndVerifyFailure($slotSignal)) {
+            return $signal.LogWarning("⚠️ Unable to resolve Slot from Jacket. Skipping $Label registration.")
+        }
+        
+        $slot = $slotSignal.GetResult()
+        
+        # ░▒▓█ CHECK FOR EXISTING ENTRY IN GRAPH USING SLOT AS KEY █▓▒░
+        $existingSignal = Resolve-PathFromDictionary -Dictionary $ServiceCollection -Path $slot | Select-Object -Last 1
+        if ($existingSignal.Success()) {
+            return $signal.LogWarning("⚠️ $Label already registered at Slot: $slot.")
+        }
+        
+        # ░▒▓█ ADD SIGNALIZED ATTACHMENT TO GRAPH █▓▒░
+        $wrappedSignal = [Signal]::new("Attachment:$slot")
+        $wrappedSignal.SetResult($Attachment)
+        
+        $addSignal = $ServiceCollection.RegisterSignal($slot, $wrappedSignal) | Select-Object -Last 1
+        if ($signal.MergeSignalAndVerifySuccess($addSignal)) {
+            $signal.LogRecovery("✅ $Label registered successfully at Slot: $slot.")
         }
         else {
-            $signal.LogWarning("⚠️ $Label already registered.")
+            $signal.LogWarning("⚠️ Failed to register $Label at Slot: $slot.")
         }
+
+$foundAttachment = Resolve-PathFromDictionary -Dictionary $ServiceCollection -Path $slot | Select-Object -Last 1
+        ################### TODO, just do a simple path to test to see if it's easy to grab a item back from the ServiceCollection
+        ################### TODO: Rename ServiceCollection
+
+$x = ""
     }
     catch {
         $signal.LogCritical("🔥 Exception while registering $($Label): $($_.Exception.Message)")

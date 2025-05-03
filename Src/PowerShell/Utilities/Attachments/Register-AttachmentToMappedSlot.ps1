@@ -10,31 +10,38 @@ function Register-AttachmentToMappedSlot {
     $signal = [Signal]::new("Register-AttachmentToMappedSlot")
 
     try {
+        # ░▒▓█ UNWRAP SIGNAL IF NECESSARY █▓▒░
+        $resolvedAttachment = if ($Attachment -is [Signal]) {
+            $Attachment.GetResult()
+        } else {
+            $Attachment
+        }
+
         # ░▒▓█ RESOLVE KIND FROM JACKET █▓▒░
-        $kindSignal = Resolve-PathFromDictionary -Dictionary $Attachment -Path "Jacket.Kind" | Select-Object -Last 1
-        if (-not $signal.MergeSignalAndVerifySuccess($kindSignal)) {
-            return $signal.LogCritical("❌ Attachment does not contain a resolvable 'Jacket.Kind' path.").Signal
+        $kindSignal = Resolve-PathFromDictionary -Dictionary $resolvedAttachment -Path "Jacket.Kind" | Select-Object -Last 1
+        if ($signal.MergeSignalAndVerifyFailure($kindSignal)) {
+            return $signal.LogCritical("❌ Attachment does not contain a resolvable 'Jacket.Kind' path.")
         }
 
         $kind = $kindSignal.GetResult()
         if ([string]::IsNullOrWhiteSpace($kind)) {
-            return $signal.LogCritical("❌ Attachment Jacket.Kind is empty or null.").Signal
+            return $signal.LogCritical("❌ Attachment Jacket.Kind is empty or null.")
         }
 
         # ░▒▓█ RESOLVE MAPPED ATTACHMENT CONTAINER █▓▒░
         $mappedPath = "MappedAttachments.$kind"
         $mappedSignal = Resolve-PathFromDictionary -Dictionary $Conductor -Path $mappedPath | Select-Object -Last 1
-        if (-not $signal.MergeSignalAndVerifySuccess($mappedSignal)) {
-            return $signal.LogCritical("❌ MappedAttachment path '$mappedPath' not found in Conductor.").Signal
+        if ($signal.MergeSignalAndVerifyFailure($mappedSignal)) {
+            return $signal.LogCritical("❌ MappedAttachment path '$mappedPath' not found in Conductor.")
         }
 
         $mappedAttachmentContainer = $mappedSignal.GetResult()
         if ($null -eq $mappedAttachmentContainer) {
-            return $signal.LogCritical("❌ MappedAttachment container at '$mappedPath' is null.").Signal
+            return $signal.LogCritical("❌ MappedAttachment container at '$mappedPath' is null.")
         }
 
         # ░▒▓█ REGISTER ATTACHMENT █▓▒░
-        $registerSignal = $mappedAttachmentContainer.RegisterAttachment($Attachment) | Select-Object -Last 1
+        $registerSignal = $mappedAttachmentContainer.RegisterAttachment($resolvedAttachment) | Select-Object -Last 1
         if ($signal.MergeSignalAndVerifySuccess($registerSignal)) {
             $signal.LogInformation("✅ Attachment registered to MappedAttachment slot '$kind'.")
         } else {
@@ -46,6 +53,11 @@ function Register-AttachmentToMappedSlot {
     }
     catch {
         $signal.LogCritical("🔥 Unhandled exception during MappedAttachment registration: $($_.Exception.Message)")
+    }
+
+    # ░▒▓█ OPTIONAL: MERGE INTO CONDUCTOR CONTROL SIGNAL █▓▒░
+    if ($Conductor -and $Conductor.ControlSignal) {
+        $Conductor.ControlSignal.MergeSignal($signal)
     }
 
     return $signal
