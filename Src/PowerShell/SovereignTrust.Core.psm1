@@ -1,12 +1,12 @@
 # Load all files (functions + classes)
-. "$PSScriptRoot/Classes/Attachments/Condenser/Graph/Graph.ps1"
+. "$PSScriptRoot/Classes/Adapters/Condenser/Graph/Graph.ps1"
 
-. "$PSScriptRoot/Classes/Attachments/UX/ConsoleLogger.ps1"
-. "$PSScriptRoot/Classes/Attachments/Condenser/JsonHelper.ps1"
+. "$PSScriptRoot/Classes/Adapters/UX/ConsoleLogger.ps1"
+#. "$PSScriptRoot/Classes/Adapters/Condenser/JsonHelper.ps1"
 
-. "$PSScriptRoot/Classes/Attachments/MappedStorageAttachment.ps1"
-. "$PSScriptRoot/Classes/Attachments/MappedNetworkAttachment.ps1"
-. "$PSScriptRoot/Classes/Attachments/MappedCondenserAttachment.ps1"
+. "$PSScriptRoot/Classes/Adapters/MappedStorageAdapter.ps1"
+. "$PSScriptRoot/Classes/Adapters/MappedNetworkAdapter.ps1"
+. "$PSScriptRoot/Classes/Adapters/MappedCondenserAdapter.ps1"
 
 . "$PSScriptRoot/Classes/Conduit/Conduit.ps1"
 . "$PSScriptRoot/Classes/Conduction/Conduction.ps1"
@@ -19,50 +19,50 @@
 . "$PSScriptRoot/Classes/Memory/Jacket.ps1"
 . "$PSScriptRoot/Classes/Memory/Wire.ps1"
 
-. "$PSScriptRoot/Classes/Attachments/Storage/Storage_EmbeddedFileSystem.ps1"
+. "$PSScriptRoot/Classes/Adapters/Storage/Storage_EmbeddedFileSystem.ps1"
 
 
 . "$PSScriptRoot/Utilities/Graph/Convert-GraphToJson.ps1"
 . "$PSScriptRoot/Utilities/Graph/Convert-JsonToGraph.ps1"
 
-. "$PSScriptRoot/Utilities/Attachments/Condenser/Hydration/Resolve-HydrationSourcePath.ps1"
-. "$PSScriptRoot/Utilities/Attachments/Condenser/Hydration/Read-HydrationFile.ps1"
-. "$PSScriptRoot/Utilities/Attachments/Condenser/Hydration/Apply-HydrationToGraph.ps1"
-. "$PSScriptRoot/Utilities/Attachments/Condenser/Hydration/Invoke-HydrationCondenserService.ps1"
-. "$PSScriptRoot/Utilities/Attachments/Condenser/Hydration/Ensure-HydrationIntentInSignal.ps1"
-. "$PSScriptRoot/Utilities/Attachments/Condenser/Hydration/Resolve-GraphHydrationQueue.ps1"
+. "$PSScriptRoot/Utilities/Adapters/Condenser/Hydration/Resolve-HydrationSourcePath.ps1"
+. "$PSScriptRoot/Utilities/Adapters/Condenser/Hydration/Read-HydrationFile.ps1"
+. "$PSScriptRoot/Utilities/Adapters/Condenser/Hydration/Apply-HydrationToGraph.ps1"
+. "$PSScriptRoot/Utilities/Adapters/Condenser/Hydration/Invoke-HydrationCondenser.ps1"
+. "$PSScriptRoot/Utilities/Adapters/Condenser/Hydration/Ensure-HydrationIntentInSignal.ps1"
+. "$PSScriptRoot/Utilities/Adapters/Condenser/Hydration/Resolve-GraphHydrationQueue.ps1"
 
-. "$PSScriptRoot/Classes/Attachments/BaseAttachment.ps1"
+. "$PSScriptRoot/Classes/Adapters/BaseAdapter.ps1"
 
-. "$PSScriptRoot/Classes/Attachments/Condenser/CondenserGraphHelper.ps1"
-. "$PSScriptRoot/Classes/Attachments/Condenser/Graph/Context.ps1"
-. "$PSScriptRoot/Classes/Attachments/Condenser/Graph/ContextReplacement.ps1"
-. "$PSScriptRoot/Classes/Attachments/Condenser/Graph/GraphReplacementType.ps1"
-. "$PSScriptRoot/Classes/Attachments/Condenser/Model/GlobalCondenserSignal.ps1"
-. "$PSScriptRoot/Classes/Attachments/Condenser/Model/GlobalCondenserProposal.ps1"
-. "$PSScriptRoot/Classes/Attachments/Condenser/Model/MapCondenserSignal.ps1"
-. "$PSScriptRoot/Classes/Attachments/Condenser/Model/MapCondenserProposal.ps1"
-. "$PSScriptRoot/Classes/Attachments/Condenser/Model/MergeCondenserSignalSettings.ps1"
-. "$PSScriptRoot/Classes/Attachments/Condenser/Model/MergeCondenserSignal.ps1"
-. "$PSScriptRoot/Classes/Attachments/Condenser/Model/MergeCondenserProposal.ps1"
-. "$PSScriptRoot/Classes/Attachments/Condenser/Services/GlobalCondenserService.ps1"
-. "$PSScriptRoot/Classes/Attachments/Condenser/Services/MapCondenserService.ps1"
-. "$PSScriptRoot/Classes/Attachments/Condenser/Services/HydrationCondenserService.ps1"
-. "$PSScriptRoot/Classes/Attachments/Condenser/Services/GraphCondenserService.ps1"
-. "$PSScriptRoot/Classes/Attachments/Condenser/Services/TokenCondenserService.ps1"
-. "$PSScriptRoot/Classes/Attachments/Condenser/Services/MergeCondenserService.ps1"
+#. "$PSScriptRoot/Classes/Adapters/Condenser/CondenserGraphHelper.ps1"
+. "$PSScriptRoot/Classes/Adapters/Condenser/Graph/Context.ps1"
+. "$PSScriptRoot/Classes/Adapters/Condenser/Graph/ContextReplacement.ps1"
+. "$PSScriptRoot/Classes/Adapters/Condenser/Graph/GraphReplacementType.ps1"
+. "$PSScriptRoot/Classes/Adapters/Condenser/Model/GlobalCondenserSignal.ps1"
+. "$PSScriptRoot/Classes/Adapters/Condenser/Model/GlobalCondenserProposal.ps1"
+. "$PSScriptRoot/Classes/Adapters/Condenser/Model/MapCondenserSignal.ps1"
+. "$PSScriptRoot/Classes/Adapters/Condenser/Model/MapCondenserProposal.ps1"
+. "$PSScriptRoot/Classes/Adapters/Condenser/Model/MergeCondenserSignalSettings.ps1"
+. "$PSScriptRoot/Classes/Adapters/Condenser/Model/MergeCondenserSignal.ps1"
+#. "$PSScriptRoot/Classes/Adapters/Condenser/Model/MergeCondenserProposal.ps1"
+. "$PSScriptRoot/Classes/Adapters/Condenser/GlobalCondenser.ps1"
+. "$PSScriptRoot/Classes/Adapters/Condenser/MapCondenser.ps1"
+. "$PSScriptRoot/Classes/Adapters/Condenser/HydrationCondenser.ps1"
+. "$PSScriptRoot/Classes/Adapters/Condenser/GraphCondenser.ps1"
+. "$PSScriptRoot/Classes/Adapters/Condenser/TokenCondenser.ps1"
+. "$PSScriptRoot/Classes/Adapters/Condenser/MergeCondenser.ps1"
 
-. "$PSScriptRoot/Utilities/Attachments/Condenser/Merge/Merge-CondenserCore.ps1"
+. "$PSScriptRoot/Utilities/Adapters/Condenser/Merge/Merge-CondenserCore.ps1"
 
 
-. "$PSScriptRoot/Utilities/Attachments/Register-MappedAttachment.ps1"
-. "$PSScriptRoot/Utilities/Attachments/Register-AttachmentToMappedSlot.ps1"
-. "$PSScriptRoot/Utilities/Attachments/Register-ModuleLoaded.ps1"
-. "$PSScriptRoot/Utilities/Attachments/Resolve-AttachmentsFromJacket.ps1"
-. "$PSScriptRoot/Utilities/Attachments/Resolve-ConductorAttachments.ps1"
-. "$PSScriptRoot/Utilities/Attachments/Test-ModuleLoaded.ps1"
-. "$PSScriptRoot/Utilities/Attachments/Resolve-DependencyModuleFromGraph.ps1"
-. "$PSScriptRoot/Utilities/Attachments/New-MappedCondenserAttachmentFromGraph.ps1"
+. "$PSScriptRoot/Utilities/Adapters/Register-MappedAdapter.ps1"
+. "$PSScriptRoot/Utilities/Adapters/Register-AdapterToMappedSlot.ps1"
+. "$PSScriptRoot/Utilities/Adapters/Register-ModuleLoaded.ps1"
+. "$PSScriptRoot/Utilities/Adapters/Resolve-AdaptersFromJacket.ps1"
+. "$PSScriptRoot/Utilities/Adapters/Resolve-ConductorAdapters.ps1"
+. "$PSScriptRoot/Utilities/Adapters/Test-ModuleLoaded.ps1"
+. "$PSScriptRoot/Utilities/Adapters/Resolve-DependencyModuleFromGraph.ps1"
+. "$PSScriptRoot/Utilities/Adapters/New-MappedCondenserAdapterFromGraph.ps1"
 
 . "$PSScriptRoot/Utilities/Tooling/Ensure-DotNetLibraryFromNuget.ps1"
 . "$PSScriptRoot/Utilities/Tooling/Invoke-TestGraph.ps1"
@@ -71,7 +71,7 @@
 . "$PSScriptRoot/Utilities/IO/LocalFileSystem/Wait-ForFileUnlock.ps1"
 . "$PSScriptRoot/Utilities/Json/Get-JsonObjectFromFile.ps1"
 
-. "$PSScriptRoot/Utilities/Conduction/Convert-AgentAttachmentsToConductor.ps1"
+. "$PSScriptRoot/Utilities/Conduction/Convert-AgentAdaptersToConductor.ps1"
 . "$PSScriptRoot/Utilities/Conduction/Get-AgentForConductor.ps1"
 . "$PSScriptRoot/Utilities/Conduction/Start-BondingConductor.ps1"
 . "$PSScriptRoot/Utilities/Json/Add-PathToDictionary.ps1"
@@ -90,10 +90,10 @@
 . "$PSScriptRoot/Utilities/Graph/Resolve-PathFormulaGraph.ps1"
 . "$PSScriptRoot/Utilities/Graph/Resolve-PathFormulaGraphForModule.ps1"
 . "$PSScriptRoot/Utilities/Graph/Resolve-PathFormulaGraphForPublisher.ps1"
-. "$PSScriptRoot/Utilities/Graph/Resolve-PathFormulaGraphCondenserAttachment.ps1"
+. "$PSScriptRoot/Utilities/Graph/Resolve-PathFormulaGraphCondenserAdapter.ps1"
 
 # Export public utility functions
-Export-ModuleMember -Function Convert-AgentAttachmentsToConductor
+Export-ModuleMember -Function Convert-AgentAdaptersToConductor
 Export-ModuleMember -Function Get-AgentForConductor
 Export-ModuleMember -Function Start-BondingConductor
 Export-ModuleMember -Function Add-PathToDictionary
@@ -119,13 +119,13 @@ Export-ModuleMember -Function Wait-ForFileUnlock
 
 
 Export-ModuleMember -Function  Resolve-DependencyModuleFromGraph
-Export-ModuleMember -Function  Register-AttachmentToMappedSlot
+Export-ModuleMember -Function  Register-AdapterToMappedSlot
 Export-ModuleMember -Function  Register-ModuleLoaded
-Export-ModuleMember -Function  Resolve-AttachmentsFromJacket
-Export-ModuleMember -Function  Resolve-ConductorAttachments
+Export-ModuleMember -Function  Resolve-AdaptersFromJacket
+Export-ModuleMember -Function  Resolve-ConductorAdapters
 Export-ModuleMember -Function  Test-ModuleLoaded
 
 Export-ModuleMember -Function  Resolve-PathFormulaGraph
 Export-ModuleMember -Function  Resolve-PathFormulaGraphForModule
 Export-ModuleMember -Function  Resolve-PathFormulaGraphForPublisher
-Export-ModuleMember -Function  Resolve-PathFormulaGraphCondenserAttachment
+Export-ModuleMember -Function  Resolve-PathFormulaGraphCondenserAdapter

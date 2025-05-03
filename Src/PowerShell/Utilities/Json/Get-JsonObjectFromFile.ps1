@@ -1,3 +1,4 @@
+#obsolete
 function Get-JsonObjectFromFile {
     param (
         [Parameter(Mandatory)][string]$RootFolder,

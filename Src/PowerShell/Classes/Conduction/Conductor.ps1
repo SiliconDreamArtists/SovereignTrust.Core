@@ -22,12 +22,12 @@ class Conductor {
     [string]$AgentName
     [string]$RoleName
     [object]$PrimaryAgent
-    [System.Collections.Generic.List[object]]$AttachmentJackets
+    [System.Collections.Generic.List[object]]$AdapterJackets
 
     [System.Collections.Generic.List[object]]$SecondaryAgents
 
-    # Mapped Attachment memory (resolved into Graph)
-    [Graph]$MappedAttachments
+    # Mapped Adapter memory (resolved into Graph)
+    [Graph]$MappedAdapters
 
     # Core conduit
     [Conduit]$PrimaryConduit
@@ -40,45 +40,45 @@ class Conductor {
 
         $this.ControlSignal = [Signal]::new("Conductor:$id")
         $this.Graph = [Graph]::new($environment)
-        $this.MappedAttachments = [Graph]::new($environment)
+        $this.MappedAdapters = [Graph]::new($environment)
 
-        $this.AttachmentJackets = [System.Collections.Generic.List[object]]::new()
+        $this.AdapterJackets = [System.Collections.Generic.List[object]]::new()
         $this.SecondaryAgents = [System.Collections.Generic.List[object]]::new()
         $this.Status = "Initialized"
 
-        $this.LoadMappedAttachments() | Out-Null
+        $this.LoadMappedAdapters() | Out-Null
     }
 
-    [Signal] LoadMappedAttachments() {
-        $signal = [Signal]::new("Conductor.LoadMappedAttachments")
+    [Signal] LoadMappedAdapters() {
+        $signal = [Signal]::new("Conductor.LoadMappedAdapters")
     
         # ░▒▓█ CONDENSER (IR–1) █▓▒░
-        $condenserSignal = $this.LoadMappedCondenserAttachment() | Select-Object -Last 1
+        $condenserSignal = $this.LoadMappedCondenserAdapter() | Select-Object -Last 1
         if ($signal.MergeSignalAndVerifyFailure($condenserSignal)) {
-            $signal.LogCritical("❌ Failed to load mapped condenser attachment.")
+            $signal.LogCritical("❌ Failed to load mapped condenser adapter.")
             return $signal
         }
     
         # ░▒▓█ STORAGE & NETWORK █▓▒░
-        $this.MappedAttachments.RegisterResultAsSignal("Storage", [MappedStorageAttachment]::new($this)) | Out-Null
-        $this.MappedAttachments.RegisterResultAsSignal("Network", [MappedNetworkAttachment]::new($this)) | Out-Null
+        $this.MappedAdapters.RegisterResultAsSignal("Storage", [MappedStorageAdapter]::new($this)) | Out-Null
+        $this.MappedAdapters.RegisterResultAsSignal("Network", [MappedNetworkAdapter]::new($this)) | Out-Null
     
-        $signal.LogInformation("🔌 MappedAttachments initialized: Storage, Network, Condenser.")
+        $signal.LogInformation("🔌 MappedAdapters initialized: Storage, Network, Condenser.")
         $this.ControlSignal.MergeSignal($signal)
         return $signal
     }
     
-    [Signal] LoadMappedCondenserAttachment() {
-        $signal = [Signal]::new("Conductor.LoadMappedCondenserAttachment")
+    [Signal] LoadMappedCondenserAdapter() {
+        $signal = [Signal]::new("Conductor.LoadMappedCondenserAdapter")
     
         # ░▒▓█ BUILD + REGISTER CONDENSER WRAPPER █▓▒░
-        $mappedSignal = New-MappedCondenserAttachmentFromGraph -Conductor $this | Select-Object -Last 1
+        $mappedSignal = New-MappedCondenserAdapterFromGraph -Conductor $this | Select-Object -Last 1
         if ($signal.MergeSignalAndVerifyFailure($mappedSignal)) {
-            $signal.LogWarning("⚠️ Condenser attachment creation failed.")
+            $signal.LogWarning("⚠️ Condenser adapter creation failed.")
             return $signal
         }
     
-        $signal.LogInformation("🧪 Condenser attachment registered successfully.")
+        $signal.LogInformation("🧪 Condenser adapter registered successfully.")
         return $signal
     }
         

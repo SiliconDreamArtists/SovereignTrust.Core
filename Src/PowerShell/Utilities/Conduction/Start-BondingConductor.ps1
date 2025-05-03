@@ -37,22 +37,22 @@ function Start-BondingConductor {
         $signal.LogInformation("✅ BondingConductor created for Agent: $AgentName with Role: $RoleName.")
 
         # ░▒▓█ ATTACHMENT MAPPING █▓▒░
-        $attachSignal = Convert-AgentAttachmentsToConductor -Agent $PrimaryAgent -RoleName $BondRoleName -Conductor $BondingConductor | Select-Object -Last 1
+        $attachSignal = Convert-AgentAdaptersToConductor -Agent $PrimaryAgent -RoleName $BondRoleName -Conductor $BondingConductor | Select-Object -Last 1
         if ($signal.MergeSignalAndVerifyFailure($attachSignal)) {
-            $signal.LogCritical("❌ Failed to map Agent Role attachment jackets into Bonding Conductor.")
+            $signal.LogCritical("❌ Failed to map Agent Role adapter jackets into Bonding Conductor.")
             return $signal
         }
 
-        $signal.LogInformation("✅ Agent and Role attachment jackets mapped into BondingConductor.")
+        $signal.LogInformation("✅ Agent and Role adapter jackets mapped into BondingConductor.")
 
         # ░▒▓█ ATTACHMENT RESOLUTION █▓▒░
-        $resolveSignal = Resolve-ConductorAttachments -Conductor $BondingConductor | Select-Object -Last 1
+        $resolveSignal = Resolve-ConductorAdapters -Conductor $BondingConductor | Select-Object -Last 1
         if ($signal.MergeSignalAndVerifyFailure($resolveSignal)) {
-            $signal.LogCritical("❌ Failed to resolve Conductor attachments.")
+            $signal.LogCritical("❌ Failed to resolve Conductor adapters.")
             return $signal
         }
 
-        $signal.LogInformation("✅ Conductor attachments resolved successfully.")
+        $signal.LogInformation("✅ Conductor adapters resolved successfully.")
 
 
         

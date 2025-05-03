@@ -3,12 +3,35 @@ function Resolve-PathFromDictionary {
         [Parameter(Mandatory)] $Dictionary,
         [Parameter(Mandatory)] [string]$Path,
         [bool]$IgnoreInternalObjects = $true,
-        [string]$InternalObjectsPrefix = "_"
+        [bool]$SkipFinalInternalUnwrap = $false
     )
 
     $signal = [Signal]::new("Resolve-PathFromDictionary")
+    
+    function Unwrap-InternalObjects {
+        param ([object]$obj)
+        $current = $obj
+        $check = $true
+        while ($check) {
+            $check = $false
+            if ($current -is [Signal]) {
+                $current = $current.GetResult()
+                $check = $true
+            } elseif ($current -is [Graph]) {
+                $current = $current.SignalGrid
+                $check = $true
+            }
+        }
+        return $current
+    }
 
     try {
+        # ░▒▓█ AUTO-ADJUST FINAL UNWRAP BASED ON PATH SUFFIX █▓▒░
+        if (-not $SkipFinalInternalUnwrap -and $Path -match '(?i)(Graph|Signal|SignalGrid)$') {
+            $SkipFinalInternalUnwrap = $true
+            $signal.LogVerbose("🧠 SkipFinalInternalUnwrap auto-enabled for path suffix match: '$Path'")
+        }
+
         $parts = $Path -split '\.'
         $current = $Dictionary
 
@@ -18,64 +41,28 @@ function Resolve-PathFromDictionary {
                 return $signal
             }
 
-            # ░▒▓█ POINTER DEREFERENCE █▓▒░
+            # ░▒▓█ INTERNAL OBJECT UNWRAP (PER STEP) █▓▒░
+            if ($IgnoreInternalObjects) {
+                $current = Unwrap-InternalObjects $current
+            }
+
+            # ░▒▓█ SIGNAL POINTER SHORTCUT █▓▒░
             if ($part -eq "*") {
                 if ($current -is [Signal] -and $current.PSObject.Properties["Pointer"]) {
                     $current = $current.Pointer
                     $signal.LogVerbose("🔗 Dereferenced *Pointer in signal.")
                     continue
-                }
-                else {
+                } else {
                     $signal.LogCritical("❌ '*' used but no Pointer found in current object.")
                     return $signal
                 }
             }
 
-            # ░▒▓█ INTERNAL DESCENT █▓▒░
-            if ($IgnoreInternalObjects) {
-                $checkIsInternal = $true
-                while ($checkIsInternal) {
-                    $checkIsInternal = $false
-
-                    if ($current -is [hashtable]) {
-                        foreach ($key in @($current.Keys)) {
-                            if ($key.StartsWith($InternalObjectsPrefix)) {
-                                $signal.LogVerbose("🔽 Descending into internal hashtable key: '$key'")
-                                $current = $current[$key]
-                                $checkIsInternal = $true
-                                break
-                            }
-                        }
-                    }
-                    elseif ($current -is [Graph]) {
-                        $signal.LogVerbose("🧠 Descending into Graph.SignalGrid from Graph object.")
-                        $current = $current.SignalGrid
-                        $checkIsInternal = $true
-                    }
-                    elseif ($current -is [Signal]) {
-                        $signal.LogVerbose("🌀 Descending into Signal result object.")
-                        $current = $current.GetResult()
-                        $checkIsInternal = $true
-                    }
-                    elseif ($current -is [pscustomobject]) {
-                        foreach ($prop in $current.PSObject.Properties) {
-                            if ($prop.Name.StartsWith($InternalObjectsPrefix)) {
-                                $signal.LogVerbose("📦 Descending into internal PSCustomObject property: '$($prop.Name)'")
-                                $current = $prop.Value
-                                $checkIsInternal = $true
-                                break
-                            }
-                        }
-                    }
-                }
-            }
-        
-
-            # ░▒▓█ FILTERED OR STANDARD SEGMENT █▓▒░
+            # ░▒▓█ FILTER SEGMENT HANDLING █▓▒░
             $parsed = Parse-FilterSegment $part
 
             if ($parsed.IsFilter) {
-                # Try to resolve the array container
+                # ░▒▓█ Resolve array for filter application █▓▒░
                 if ($current -is [System.Collections.IDictionary] -and $current.ContainsKey($parsed.ArrayKey)) {
                     $array = $current[$parsed.ArrayKey]
                 }
@@ -87,7 +74,7 @@ function Resolve-PathFromDictionary {
                     return $signal
                 }
 
-                # Apply filters
+                # ░▒▓█ Apply structured filters and isolate match █▓▒░
                 $match = Resolve-FilteredArrayItem -Array $array -Filters $parsed.Filters -Signal $signal
                 if ($null -eq $match) {
                     return $signal
@@ -97,8 +84,10 @@ function Resolve-PathFromDictionary {
                 continue
             }
 
-            # ░▒▓█ STANDARD SEGMENT TRAVERSAL █▓▒░
+            # ░▒▓█ RAW SEGMENT TRAVERSAL █▓▒░
             $partName = $parsed.Raw
+
+            # ░▒▓█ Hashtable/Dictionary Access █▓▒░
             if ($current -is [System.Collections.IDictionary] -and $current.Contains($partName)) {
                 $current = $current[$partName]
             }
@@ -111,6 +100,8 @@ function Resolve-PathFromDictionary {
                     return $signal
                 }
             }
+
+            # ░▒▓█ PSCustomObject Property Access █▓▒░
             elseif ($current -is [pscustomobject]) {
                 if ($current.PSObject.Properties.Name -contains $partName) {
                     $current = $current.$partName
@@ -120,6 +111,8 @@ function Resolve-PathFromDictionary {
                     return $signal
                 }
             }
+
+            # ░▒▓█ Enumerable Named Lookup █▓▒░
             elseif ($current -is [System.Collections.IEnumerable] -and -not ($current -is [string])) {
                 $found = $null
                 foreach ($item in $current) {
@@ -137,6 +130,8 @@ function Resolve-PathFromDictionary {
                     return $signal
                 }
             }
+
+            # ░▒▓█ Sovereign Class Object Descent █▓▒░
             elseif ($current.GetType().IsClass -and $current.GetType().Namespace -ne "System") {
                 $propInfo = $current.GetType().GetProperty($partName)
                 if ($null -eq $propInfo) {
@@ -150,12 +145,20 @@ function Resolve-PathFromDictionary {
                 }
                 $current = $next
             }
+
+            # ░▒▓█ UNSUPPORTED TYPE HANDLING █▓▒░
             else {
                 $signal.LogCritical("Unsupported object type encountered while traversing path '$Path'. Type: $($current.GetType().FullName)")
                 return $signal
             }
         }
 
+        # ░▒▓█ FINAL UNWRAP (IF ENABLED) █▓▒░
+        if (-not $SkipFinalInternalUnwrap) {
+            $current = Unwrap-InternalObjects $current
+        }
+
+        # ░▒▓█ SUCCESS RETURN █▓▒░
         $signal.SetResult($current)
         $signal.LogInformation("Successfully resolved path '$Path'.")
     }

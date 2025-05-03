@@ -1,3 +1,4 @@
+#TODO: Make Signal Doctrine Compliant
 function Parse-FilterSegment {
     param([string]$segment)
 

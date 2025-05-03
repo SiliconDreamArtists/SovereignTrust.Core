@@ -6,12 +6,12 @@
 04/26/2025  10:03 PM               756 New-ModuleManifest.ps1
                1 File(s)            756 bytes
 
- Directory of C:\GitHub\SiliconDreamArtists\SovereignTrust.Core\Src\PowerShell\Classes\Attachments
+ Directory of C:\GitHub\SiliconDreamArtists\SovereignTrust.Core\Src\PowerShell\Classes\Adapters
 
-04/26/2025  10:00 PM               335 BaseAttachment.ps1
+04/26/2025  10:00 PM               335 BaseAdapter.ps1
                1 File(s)            335 bytes
 
- Directory of C:\GitHub\SiliconDreamArtists\SovereignTrust.Core\Src\PowerShell\Classes\Attachments\Condenser
+ Directory of C:\GitHub\SiliconDreamArtists\SovereignTrust.Core\Src\PowerShell\Classes\Adapters\Condenser
 
 04/27/2025  08:52 PM             1,223 GlobalCondenserSignal.ps1
 04/27/2025  06:32 PM               526 GlobalCondenserProposal.ps1
@@ -19,7 +19,7 @@
 04/27/2025  09:33 PM               337 MapCondenserProposal.ps1
                4 File(s)          2,259 bytes
 
- Directory of C:\GitHub\SiliconDreamArtists\SovereignTrust.Core\Src\PowerShell\Classes\Attachments\Condenser\Graph
+ Directory of C:\GitHub\SiliconDreamArtists\SovereignTrust.Core\Src\PowerShell\Classes\Adapters\Condenser\Graph
 
 04/27/2025  09:56 PM             2,758 Context.ps1
 04/27/2025  09:33 PM             2,790 Graph.ps1
@@ -27,13 +27,13 @@
 04/27/2025  05:14 PM               180 ContextReplacement.ps1
                4 File(s)          6,392 bytes
 
- Directory of C:\GitHub\SiliconDreamArtists\SovereignTrust.Core\Src\PowerShell\Classes\Attachments\Condenser\Services
+ Directory of C:\GitHub\SiliconDreamArtists\SovereignTrust.Core\Src\PowerShell\Classes\Adapters\Condenser\Services
 
-04/27/2025  05:23 PM             7,672 GlobalCondenserService.ps1
-04/27/2025  08:44 PM             3,017 GraphCondenserService.ps1
-04/27/2025  08:44 PM             1,404 MappedCondenserAttachment.ps1
-04/27/2025  08:52 PM             7,667 MergeCondenserService.ps1
-04/27/2025  09:56 PM             5,362 TokenCondenserService.ps1
+04/27/2025  05:23 PM             7,672 GlobalCondenser.ps1
+04/27/2025  08:44 PM             3,017 GraphCondenser.ps1
+04/27/2025  08:44 PM             1,404 MappedCondenserAdapter.ps1
+04/27/2025  08:52 PM             7,667 MergeCondenser.ps1
+04/27/2025  09:56 PM             5,362 TokenCondenser.ps1
                5 File(s)         25,122 bytes
 
  Directory of C:\GitHub\SiliconDreamArtists\SovereignTrust.Core\Src\PowerShell\Classes\Conduction
@@ -60,7 +60,7 @@
 
  Directory of C:\GitHub\SiliconDreamArtists\SovereignTrust.Core\Src\PowerShell\Utilities\Conduction
 
-04/27/2025  02:39 PM             1,881 Convert-AgentAttachmentsToConductor.ps1
+04/27/2025  02:39 PM             1,881 Convert-AgentAdaptersToConductor.ps1
 04/27/2025  02:33 PM             1,276 Get-AgentForConductor.ps1
 04/27/2025  02:31 PM             2,371 Start-BondingConductor.ps1
                3 File(s)          5,528 bytes

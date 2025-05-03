@@ -29,13 +29,13 @@ Signals ensure the system breathes, remembers, and evolves.
 
 ---
 
-# 🔀 III. Third Principle: Attachments Evolve
+# 🔀 III. Third Principle: Adapters Evolve
 
 Functionality is plug-in and sovereign.  
-Memory attaches modular behavior dynamically through **Attachments** —
+Memory attaches modular behavior dynamically through **Adapters** —
 modular conduits of evolution, not hard-coded extensions.
 
-- Attachments expand capability without eroding sovereignty.
+- Adapters expand capability without eroding sovereignty.
 - They are recognized, not embedded.
 - They are woven, not fused.
 
@@ -63,7 +63,7 @@ Artifacts are designed to:
 | **Conduction** | A runtime execution record. Lifecycle memory for dynamic runs. |
 | **Conduit**    | A structural binder of memory actions and flows. |
 | **Signal**     | A living feedback construct for every event or action. |
-| **Attachment** | An optional evolutionary expansion to memory. |
+| **Adapter** | An optional evolutionary expansion to memory. |
 
 ---
 

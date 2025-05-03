@@ -9,14 +9,14 @@ function Invoke-TestGraph {
     $graph.Start()
 
     # ░▒▓█ DEFINE PATHS █▓▒░
-    $relativePath = "SovereignTrust.Attachments\Src\Network\AzureStorageQueue\PowerShell\SovereignTrust.Attachments.Network_AzureStorageQueue.Dependencies.json"
+    $relativePath = "SovereignTrust.Adapters\Src\Network\AzureStorageQueue\PowerShell\SovereignTrust.Adapters.Network_AzureStorageQueue.Dependencies.json"
     $rootFolder   = "C:\GitHub\SiliconDreamArtists"
     $fullPath     = Join-Path $rootFolder $relativePath
 
     # ░▒▓█ BUILD POINTER JACKET █▓▒░
     $pointerJacket = @{
         FullPath    = $fullPath
-        VirtualPath = "SovereignTrust.Attachments.Network_AzureStorageQueue.Dependencies"
+        VirtualPath = "SovereignTrust.Adapters.Network_AzureStorageQueue.Dependencies"
         Type        = "DependencyGraph"
     }
 
