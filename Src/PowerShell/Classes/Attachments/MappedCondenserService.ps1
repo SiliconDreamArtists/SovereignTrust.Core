@@ -1,4 +1,4 @@
-class MappedCondenserService {
+class MappedCondenserAttachment {
     [object]$GlobalCondenser
     [object]$TokenCondenser
     [object]$MapCondenser
@@ -6,7 +6,7 @@ class MappedCondenserService {
     [object]$GraphCondenser
     [object]$Conductor
 
-    MappedCondenserService([object]$Conductor) {
+    MappedCondenserAttachment([object]$Conductor) {
         $this.Conductor = $Conductor
         $this.GlobalCondenser = [GlobalCondenserService]::new($this, $Conductor)
         $this.MergeCondenser = [MergeCondenserService]::new($this, $Conductor)

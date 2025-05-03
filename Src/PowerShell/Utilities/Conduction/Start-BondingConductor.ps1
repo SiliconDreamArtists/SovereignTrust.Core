@@ -7,6 +7,9 @@ function Start-BondingConductor {
         [string]$AgentName,
 
         [Parameter(Mandatory = $true)]
+        [string]$BondRoleName,
+
+        [Parameter(Mandatory = $true)]
         [string]$RoleName
     )
 
@@ -23,7 +26,7 @@ function Start-BondingConductor {
         $PrimaryAgent = $agentSignal.GetResult()
 
         # ░▒▓█ CONDUCTOR INITIALIZATION █▓▒░
-        $BondingConductor = [Conductor]::new([guid]::NewGuid().ToString())
+        $BondingConductor = [Conductor]::new([guid]::NewGuid().ToString(), $null, $Environment)
         $BondingConductor.Environment     = $Environment
         $BondingConductor.AgentName       = $AgentName
         $BondingConductor.RoleName        = $RoleName
@@ -34,9 +37,9 @@ function Start-BondingConductor {
         $signal.LogInformation("✅ BondingConductor created for Agent: $AgentName with Role: $RoleName.")
 
         # ░▒▓█ ATTACHMENT MAPPING █▓▒░
-        $attachSignal = Convert-AgentAttachmentsToConductor -Agent $PrimaryAgent -Conductor $BondingConductor | Select-Object -Last 1
+        $attachSignal = Convert-AgentAttachmentsToConductor -Agent $PrimaryAgent -RoleName $BondRoleName -Conductor $BondingConductor | Select-Object -Last 1
         if ($signal.MergeSignalAndVerifyFailure($attachSignal)) {
-            $signal.LogCritical("❌ Failed to map Agent/Role attachment jackets into Conductor.")
+            $signal.LogCritical("❌ Failed to map Agent Role attachment jackets into Bonding Conductor.")
             return $signal
         }
 

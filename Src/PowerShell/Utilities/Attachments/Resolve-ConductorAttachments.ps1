@@ -19,7 +19,7 @@ function Resolve-ConductorAttachments {
         }
 
         if ($jacketListSignal.Failure()) {
-            $signal.LogCritical("AttachmentJacketList not found on the conductor.")
+            $signal.LogCritical("AttachmentJackets  not found on the conductor.")
             return $signal
         }
 
@@ -41,7 +41,8 @@ function Resolve-ConductorAttachments {
                         $resolvedType = $resolvedAttachment.GetType().Name
                         $signal.LogVerbose("Attachment '$name' resolved as type '$resolvedType'.")
                 
-                        $addSignal = Register-AttachmentToMappedSlot -Conductor $Conductor -Attachment $resolvedAttachment | Select-Object -Last 1
+                        $mergeCondenserSignal = Resolve-PathFromDictionary -Dictionary $Conductor -Path "MappedAttachments.Condenser.MergeCondenser" | Select-Object -Last 1
+                        $addSignal = Register-AttachmentToMappedSlot -Conductor $Conductor -Attachment $resolveSignal | Select-Object -Last 1
                 
                         if ($signal.MergeSignalAndVerifySuccess($addSignal)) {
                             $signal.LogInformation("Attachment '$name' mounted successfully.")

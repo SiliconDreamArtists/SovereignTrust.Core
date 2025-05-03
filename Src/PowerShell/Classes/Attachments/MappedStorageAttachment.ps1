@@ -35,11 +35,11 @@ templates, modules, and data — using only memory and WirePath.
 #>
 
 class MappedStorageAttachment {
-    [Conductor]$Conductor
+    [object]$Conductor
     [hashtable]$ServiceCollection
     $MyName = "MappedStorageAttachment"
 
-    MappedStorageAttachment([Conductor]$conductor) {
+    MappedStorageAttachment([object]$conductor) {
         $this.ServiceCollection = @{}
         $this.Conductor = $conductor
     }

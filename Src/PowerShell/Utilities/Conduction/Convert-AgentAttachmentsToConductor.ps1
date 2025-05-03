@@ -22,6 +22,10 @@ function Convert-AgentAttachmentsToConductor {
         [object]$Agent,
 
         [Parameter(Mandatory = $true)]
+        [string]$RoleName,
+
+
+        [Parameter(Mandatory = $true)]
         [object]$Conductor
     )
 
@@ -62,23 +66,9 @@ function Convert-AgentAttachmentsToConductor {
             }
         }
 
-        # ░▒▓█ AGENT ATTACHMENTS █▓▒░
-        $agentAttachmentsSignal = Resolve-PathFromDictionary -Dictionary $Agent -Path "Attachments" | Select-Object -Last 1
-        if ($signal.MergeSignalAndVerifySuccess($agentAttachmentsSignal, $true, "Agent-level attachments are optional and were safely muted.")) {
-            $agentAttachments = $agentAttachmentsSignal.GetResult()
-            foreach ($attachmentJacket in $agentAttachments) {
-                if ($attachmentJacket.Name) {
-                    Add-AttachmentJacket -name $attachmentJacket.Name -jacket $attachmentJacket
-                } else {
-                    $signal.LogWarning("Skipped Agent attachment jacket with missing name.")
-                }
-            }
-            $signal.LogInformation("Agent-level attachment jackets migrated to Conductor.")
-        }
-
-        # ░▒▓█ ROLE ATTACHMENTS █▓▒░
-        $roleAttachmentsSignal = Resolve-PathFromDictionary -Dictionary $Agent -Path "CurrentRole.Attachments" | Select-Object -Last 1
-        if ($signal.MergeSignalAndVerifySuccess($roleAttachmentsSignal, $true, "Role-level attachments are optional and were safely muted.")) {
+        # ░▒▓█ AGENT ROLE ATTACHMENTS █▓▒░
+        $roleAttachmentsSignal = Resolve-PathFromDictionary -Dictionary $Agent -Path "Roles.$RoleName.Attachments" | Select-Object -Last 1
+        if ($signal.MergeSignalAndVerifySuccess($roleAttachmentsSignal, $true, "Attachments are optional and were safely muted.")) {
             $roleAttachments = $roleAttachmentsSignal.GetResult()
             foreach ($roleAttachmentJacket in $roleAttachments) {
                 if ($roleAttachmentJacket.Name) {

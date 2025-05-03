@@ -1,9 +1,9 @@
 class GlobalCondenserService {
-    [object]$MappedCondenserService
+    [object]$MappedCondenserAttachment
     [object]$Conductor
 
-    GlobalCondenserService([object]$mappedCondenserService, [object]$conductor) {
-        $this.MappedCondenserService = $mappedCondenserService
+    GlobalCondenserService([object]$mappedCondenserAttachment, [object]$conductor) {
+        $this.MappedCondenserAttachment = $mappedCondenserAttachment
         $this.Conductor = $conductor
     }
 
@@ -153,7 +153,7 @@ class GlobalCondenserService {
             PerformMergeOnly = $MergeOnly
         }
 
-        $mergeSignal = $this.Conductor.MappedCondenserService.MergeCondenser.Invoke("", $mergeProposal)
+        $mergeSignal = $this.Conductor.MappedCondenserAttachment.MergeCondenser.Invoke("", $mergeProposal)
 
         if ($mergeSignal.Success) {
             $signal.Result = $mergeSignal.Result

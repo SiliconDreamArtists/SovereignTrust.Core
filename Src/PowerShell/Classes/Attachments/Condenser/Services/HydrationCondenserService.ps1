@@ -1,9 +1,9 @@
-class TokenCondenserService {
+class HydrationCondenserService {
     [Conductor]$Conductor
     [MappedCondenserAttachment]$MappedCondenserAttachment
     [Signal]$ControlSignal
 
-    TokenCondenserService([MappedCondenserAttachment]$mappedAttachment, [Conductor]$conductor) {
+    HydrationCondenserService([MappedCondenserAttachment]$mappedAttachment, [Conductor]$conductor) {
         $this.MappedCondenserAttachment = $mappedAttachment
         $this.Conductor = $conductor
         $this.ControlSignal = [Signal]::new("MergeCondenserService.Control")
@@ -18,7 +18,7 @@ class TokenCondenserService {
     }
 
     [Signal] GetToken([string]$Value, $CondenserSignal, [bool]$ThrowExceptionOnEmpty = $true, [int]$RetryAttempts = 2) {
-        $signal = [Signal]::new("GetToken:$Value")
+        $signal = [Signal]::new("GetToken:$Value")  
     
         if ([string]::IsNullOrWhiteSpace($Value)) {
             $signal.LogWarning("Token value was empty or null.")

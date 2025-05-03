@@ -1,5 +1,7 @@
 # =============================================================================
 # 🧠 Graph (Working Memory using a SignalGrid)
+#  License: MIT License • Copyright (c) 2025 Silicon Dream Artists / BDDB
+#  Authors: Shadow PhanTom ☠️🧁👾️/🤖 • Neural Alchemist ⚗️☣️🐲 • Last Generated: 05/02/2025
 # =============================================================================
 # The Graph object represents the live working memory during a conduction which can have an infiniate amount of internal conductions, so a user or ai may open a conduction with a graph and then perform a series of .
 # The Graph is a ordered dictionary of Signals, which are the building blocks of the Graph. The Graph has a central Signal itself for tracking current state.
@@ -8,42 +10,67 @@
 
 class Graph {
     [object]$Environment
-    [Signal]$GraphSignal
+    [Signal]$ControlSignal
     [ordered]$SignalGrid
     [ordered]$_Memory
 
     Graph([object]$environment) {
         $this.Environment = $environment
-        $this.GraphSignal = [Signal]::new("GraphSignal")
+        $this.ControlSignal = [Signal]::new("Signal")
         $this.SignalGrid = [ordered]@{}
         $this._Memory = $this.SignalGrid
     }
 
-    [void] Start() {
-        $this.GraphSignal.LogInformation("🧠 Graph condensation process started.")
+    [Signal] Start() {
+        $signal = [Signal]::new("Graph.Start")
+        $signal.LogInformation("🧠 Graph condensation process started.")
+        $this.ControlSignal.MergeSignal($signal)
+        return $signal
     }
-
-    [void] Finalize() {
-        $this.GraphSignal.LogInformation("✅ Graph condensation finalized. Total Signals: $($this.SignalGrid.Count)")
+    
+    [Signal] Finalize() {
+        $signal = [Signal]::new("Graph.Finalize")
+        $signal.LogInformation("✅ Graph condensation finalized. Total registered signals: $($this.SignalGrid.Count)")
+        $this.ControlSignal.MergeSignal($signal)
+        return $signal
     }
+    
+    [Signal] RegisterSignal([string]$Key, [Signal]$Signal) {
+        $opSignal = [Signal]::new("RegisterSignal:$Key")
 
-    [void] RegisterSignal([string]$Key, [Signal]$Signal) {
         if ($this.SignalGrid.Contains($Key)) {
-            $this.GraphSignal.LogWarning("⚠️ Overwriting existing signal at key: $Key")
+            $opSignal.LogWarning("⚠️ Overwriting existing signal at key: $Key")
         }
+
         $this.SignalGrid[$Key] = $Signal
-        $this.GraphSignal.LogVerbose("🔗 Signal registered under key: $Key")
+        $opSignal.LogVerbose("🔗 Signal registered under key: $Key")
+
+        $this.ControlSignal.MergeSignal($opSignal)
+        return $opSignal
     }
 
-    [void] UnRegisterSignal([string]$Key) {
+    [Signal] UnRegisterSignal([string]$Key) {
+        $opSignal = [Signal]::new("UnRegisterSignal:$Key")
+
         if ($this.SignalGrid.Contains($Key)) {
             $this.SignalGrid.Remove($Key)
-            $this.GraphSignal.LogVerbose("🔓 Signal unregistered at key: $Key")
-        } else {
-            $this.GraphSignal.LogWarning("⚠️ Attempted to unregister missing signal at key: $Key")
+            $opSignal.LogVerbose("🔓 Signal unregistered at key: $Key")
         }
+        else {
+            $opSignal.LogWarning("⚠️ Attempted to unregister missing signal at key: $Key")
+        }
+
+        $this.ControlSignal.MergeSignal($opSignal)
+        return $opSignal
     }
 
+    [Signal] RegisterResultAsSignal([string]$Key, [object]$Result) {
+        $resultSignal = [Signal]::new($Key)
+        $resultSignal.SetResult($Result)
+        $this.ControlSignal.MergeSignal($resultSignal)
+        return $this.RegisterSignal($Key, $resultSignal)
+    }
+    
     [string] ToJson([bool]$IgnoreInternalObjects = $false) {
         $signal = [Signal]::new("Graph.ToJson")
     
@@ -63,24 +90,30 @@ class Graph {
         }
     }
     
-    static [Graph] FromJson([string]$json, [bool]$IgnoreInternalObjects = $false) {
+    static [Signal] FromJson([string]$json, [bool]$IgnoreInternalObjects = $false) {
         $signal = [Signal]::new("Graph.FromJson")
     
         try {
             $jsonObject = $json | ConvertFrom-Json -Depth 25
-            $_graphSignal = Convert-JsonObjectToGraph -JsonObject $jsonObject -IgnoreInternalObjects:$IgnoreInternalObjects | Select-Object -Last 1
     
-            if ($signal.MergeSignalAndVerifyFailure($_graphSignal)) {
-                $signal.LogCritical("❌ Failed to reconstruct Graph from JSON object.")
-                return $null
+            $conversionSignal = Convert-JsonObjectToGraph -JsonObject $jsonObject -IgnoreInternalObjects:$IgnoreInternalObjects | Select-Object -Last 1
+            $signal.MergeSignal($conversionSignal)
+    
+            if ($conversionSignal.Failure()) {
+                $signal.LogCritical("❌ Failed to reconstruct Graph from JSON.")
+                $signal.IsTerminal = $true
+                return $signal
             }
     
-            $graph = $_graphSignal.GetResult()
-            return $graph
+            $graph = $conversionSignal.GetResult()
+            $signal.SetResult($graph)
+            $signal.LogInformation("✅ Successfully reconstructed Graph from JSON.")
         }
         catch {
-            $signal.LogCritical("🔥 Exception during Graph.FromJson(): $($_.Exception.Message)")
-            return $null
+            $signal.LogCritical("🔥 Exception in Graph.FromJson: $($_.Exception.Message)")
+            $signal.IsTerminal = $true
         }
+    
+        return $signal
     }
 }

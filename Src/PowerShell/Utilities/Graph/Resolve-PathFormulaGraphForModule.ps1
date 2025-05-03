@@ -44,7 +44,7 @@ function Resolve-PathFormulaGraphForModule {
             Slot               = $slot
             Key                = $key
             WirePath           = $WirePath
-            FileName           = $fileStem
+            FullType           = $fileStem
             Name               = $fileName
             RelativeFolderPath = $relativeFolderPath
             RelativeFilePath   = $relativeFilePath
@@ -59,7 +59,7 @@ function Resolve-PathFormulaGraphForModule {
             )
         })
                 
-        $graph.RegisterSignal($fileStem, $nodeSignal)
+        $graph.RegisterSignal("Manifest", $nodeSignal)
         $graph.Finalize()
 
         $signal.SetResult($graph)

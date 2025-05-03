@@ -20,16 +20,14 @@ function Resolve-AttachmentFromJacket {
         $wirePath = $virtualPathSignal.GetResult()
 
         # ░▒▓█ LOAD MODULE MANIFEST GRAPH █▓▒░
-        $manifestSignal = Resolve-DependencyModuleFromGraph -ConductionContext $ConductionContext -WirePath $wirePath | Select-Object -Last 1
-        if ($signal.MergeSignalAndVerifyFailure($manifestSignal)) {
+        $moduleGraphSignal = Resolve-DependencyModuleFromGraph -ConductionContext $ConductionContext -WirePath $wirePath | Select-Object -Last 1
+        if ($signal.MergeSignalAndVerifyFailure($moduleGraphSignal)) {
             $signal.LogCritical("❌ Failed to load manifest from WirePath: $wirePath")
             return $signal
         }
 
-        $manifest = $manifestSignal.GetResult()
-
         # ░▒▓█ RESOLVE CLASS TYPE FROM MANIFEST █▓▒░
-        $typeSignal = Resolve-PathFromDictionary -Dictionary $manifest -Path "Classes.0.Name" | Select-Object -Last 1
+        $typeSignal = Resolve-PathFromDictionary -Dictionary $moduleGraphSignal -Path "Manifest.FullType" | Select-Object -Last 1
         if ($signal.MergeSignalAndVerifyFailure($typeSignal)) {
             $signal.LogCritical("❌ Class name missing in manifest.")
             return $signal
@@ -46,18 +44,41 @@ function Resolve-AttachmentFromJacket {
             return $signal
         }
 
+        # ░▒▓█ MERGE $JACKET OVER $MANIFEST █▓▒░
+        $manifestSignal = Resolve-PathFromDictionary -Dictionary $moduleGraphSignal -Path "Manifest" | Select-Object -Last 1
+        if ($signal.MergeSignalAndVerifyFailure($manifestSignal)) {
+            $signal.LogCritical("❌ Failed to extract Manifest dictionary from Graph.")
+            return $signal
+        }
+
+        $mergeServiceSignal = Resolve-PathFromDictionary -Dictionary $ConductionContext -Path "MappedAttachments.Condenser.AttachmentGraph.MergeCondenser" | Select-Object -Last 1
+        if ($signal.MergeSignalAndVerifyFailure($mergeServiceSignal)) {
+            $signal.LogCritical("❌ MergeCondenserService not available on ConductionContext.")
+            return $signal
+        }
+
+        $mergeService = $mergeServiceSignal.GetResult()
+        $mergedSignal = $mergeService.InvokeByParameter($manifestSignal.GetResult(), $Jacket, $true) | Select-Object -Last 1
+
+        if ($signal.MergeSignalAndVerifyFailure($mergedSignal)) {
+            $signal.LogWarning("⚠️ Jacket-to-Manifest merge failed; continuing with original jacket.")
+        } else {
+            $Jacket = $mergedSignal.GetResult()
+            $signal.LogInformation("🧬 Jacket successfully merged over Manifest.")
+        }
+
         # ░▒▓█ CONSTRUCT METHOD (OPTIONAL) █▓▒░
         if ($instance -and ($instance | Get-Member -Name "Construct" -MemberType Method)) {
             $constructCall = $instance.Construct($Jacket)
             $constructSignal = $constructCall | Select-Object -Last 1
 
             if ($signal.MergeSignalAndVerifySuccess($constructSignal)) {
-                $signal.LogInformation("✅ Attachment '$($Jacket.Name)' constructed successfully.")
+                $signal.LogInformation("✅ Attachment '$($Jacket.Name)' ($($Jacket.VirtualPath)) constructed successfully.")
             } else {
                 $signal.LogWarning("⚠️ Construct() failed on attachment '$($Jacket.Name)'.")
             }
         } else {
-            $signal.LogVerbose("No Construct() method found for '$($Jacket.Name)'. Proceeding without initialization.")
+            $signal.LogVerbose("No Construct() method found for '$($Jacket.Name)'. ($($Jacket.VirtualPath)) Proceeding without initialization.")
         }
 
         # ░▒▓█ RESULT █▓▒░

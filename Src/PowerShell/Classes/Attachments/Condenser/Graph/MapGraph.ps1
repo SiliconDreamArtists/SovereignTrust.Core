@@ -9,7 +9,7 @@
 # GraphCondenser — able to be persisted, reviewed, or executed upon. Graphs are
 # where dimensional input becomes applied memory, ready for sovereign evolution.
 
-class Graph {
+class OldGraph {
     [object]$Metadata
     [object[]]$BlockContext
     [object]$XmlRepresentation

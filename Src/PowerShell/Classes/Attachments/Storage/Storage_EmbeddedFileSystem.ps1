@@ -2,6 +2,9 @@ class Storage_EmbeddedFileSystem {
     [MappedStorageAttachment]$MappedAttachment
     [object]$Jacket
 
+    Storage_EmbeddedFileSystem() {
+    }
+
     Storage_EmbeddedFileSystem([MappedStorageAttachment]$mappedAttachment) {
         $this.MappedAttachment = $mappedAttachment
     }

@@ -3,10 +3,14 @@
 # Performs template condensation using dynamic mappings and embedded context.
 
 class MapCondenserService {
-    [object]$MappedCondenserService
+    [Conductor]$Conductor
+    [MappedCondenserAttachment]$MappedCondenserAttachment
+    [Signal]$ControlSignal
 
-    MapCondenserService([object]$mappedCondenserService) {
-        $this.MappedCondenserService = $mappedCondenserService
+    MapCondenserService([MappedCondenserAttachment]$mappedAttachment, [Conductor]$conductor) {
+        $this.MappedCondenserAttachment = $mappedAttachment
+        $this.Conductor = $conductor
+        $this.ControlSignal = [Signal]::new("MergeCondenserService.Control")
     }
 
     [Signal] CondenseTemplate([object]$Proposal, [object]$Context) {

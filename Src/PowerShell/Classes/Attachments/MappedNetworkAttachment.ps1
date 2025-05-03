@@ -1,9 +1,9 @@
 class MappedNetworkAttachment {
-    [Conductor]$Conductor
+    [object]$Conductor
     [hashtable]$ServiceCollection
     $MyName = "MappedNetworkAttachment"
 
-    MappedNetworkAttachment([Conductor]$conductor) {
+    MappedNetworkAttachment([object]$conductor) {
         $this.ServiceCollection = @{}
         $this.Conductor = $conductor
     }

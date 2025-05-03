@@ -1,11 +1,16 @@
 class GraphCondenserService {
-    [object]$MappedCondenserService
+    [Conductor]$Conductor
+    [MappedCondenserAttachment]$MappedCondenserAttachment
+    [Signal]$ControlSignal
 
-    static [hashtable]$GraphDictionaries = @{}
-    static [string]$XmlExtension = ".xml"
+    GraphCondenserService([MappedCondenserAttachment]$mappedAttachment, [Conductor]$conductor) {
+        $this.MappedCondenserAttachment = $mappedAttachment
+        $this.Conductor = $conductor
+        $this.ControlSignal = [Signal]::new("GraphCondenserService.Control")
+    }
 
-    GraphCondenserService([object]$mappedCondenserService) {
-        $this.MappedCondenserService = $mappedCondenserService
+    GraphCondenserService([object]$mappedCondenserAttachment) {
+        $this.MappedCondenserAttachment = $mappedCondenserAttachment
     }
 
     [Signal] CondenseMini([GraphCondenserProposal]$Proposal, [object]$CancellationToken, [string]$OverrideTemplatePath = $null) {
