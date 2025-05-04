@@ -1,5 +1,5 @@
 # Load all files (functions + classes)
-. "$PSScriptRoot/Classes/Adapters/Condenser/Graph/Graph.ps1"
+. "$PSScriptRoot/Classes/Graph/Graph.ps1"
 
 . "$PSScriptRoot/Classes/Adapters/UX/ConsoleLogger.ps1"
 #. "$PSScriptRoot/Classes/Adapters/Condenser/JsonHelper.ps1"
@@ -35,9 +35,9 @@
 . "$PSScriptRoot/Classes/Adapters/BaseAdapter.ps1"
 
 #. "$PSScriptRoot/Classes/Adapters/Condenser/CondenserGraphHelper.ps1"
-. "$PSScriptRoot/Classes/Adapters/Condenser/Graph/Context.ps1"
-. "$PSScriptRoot/Classes/Adapters/Condenser/Graph/ContextReplacement.ps1"
-. "$PSScriptRoot/Classes/Adapters/Condenser/Graph/GraphReplacementType.ps1"
+. "$PSScriptRoot/Classes/Graph/Context.ps1"
+. "$PSScriptRoot/Classes/Graph/ContextReplacement.ps1"
+. "$PSScriptRoot/Classes/Graph/GraphReplacementType.ps1"
 . "$PSScriptRoot/Classes/Adapters/Condenser/Model/GlobalCondenserSignal.ps1"
 . "$PSScriptRoot/Classes/Adapters/Condenser/Model/GlobalCondenserProposal.ps1"
 . "$PSScriptRoot/Classes/Adapters/Condenser/Model/MapCondenserSignal.ps1"
@@ -88,6 +88,7 @@
 . "$PSScriptRoot/Utilities/Json/Set-DictionaryValue.ps1"
 
 . "$PSScriptRoot/Utilities/Graph/Resolve-PathFormulaGraph.ps1"
+. "$PSScriptRoot/Utilities/Graph/Resolve-PathFormulaGraphForAgentRoles.ps1"
 . "$PSScriptRoot/Utilities/Graph/Resolve-PathFormulaGraphForModule.ps1"
 . "$PSScriptRoot/Utilities/Graph/Resolve-PathFormulaGraphForPublisher.ps1"
 . "$PSScriptRoot/Utilities/Graph/Resolve-PathFormulaGraphCondenserAdapter.ps1"

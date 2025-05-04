@@ -14,6 +14,9 @@ class Conductor {
     [Conductor]$HostConductor
     [object]$Environment
 
+    [Graph]$AgentGraph
+
+    [object]$Jacket
     [Graph]$Graph
     [Signal]$ControlSignal
     [string]$Status
@@ -34,6 +37,7 @@ class Conductor {
 
     Conductor([string]$id, [Conductor]$hostConductor = $null, $environment) {
         $this.Id = $id
+        $this.Jacket = $environment
         $this.HostConductor = $hostConductor
         $this.Environment = $environment
         $this.IsHostConductor = $null -eq $hostConductor
@@ -47,6 +51,7 @@ class Conductor {
         $this.Status = "Initialized"
 
         $this.LoadMappedAdapters() | Out-Null
+        $this.LoadAgentGraph() | Out-Null
     }
 
     [Signal] LoadMappedAdapters() {
@@ -65,6 +70,27 @@ class Conductor {
     
         $signal.LogInformation("🔌 MappedAdapters initialized: Storage, Network, Condenser.")
         $this.ControlSignal.MergeSignal($signal)
+        return $signal
+    }
+    
+    [Signal] LoadAgentGraph() {
+        $signal = [Signal]::new("Conductor.LoadAgentGraph")
+
+        # ░▒▓█ WRAP SELF AS CONDUCTION SIGNAL █▓▒░
+        $conductionSignal = [Signal]::new("ConductionContext")
+        $conductionSignal.SetResult($this)
+        $conductionSignal.SetPointer($this.Graph)
+        $conductionSignal.LogVerbose("📦 Wrapped Conductor as ConductionSignal with self-pointer to primary Graph.")
+
+        # ░▒▓█ CALL FORMULA RESOLVER █▓▒░
+        $agentGraphSignal = Resolve-PathFormulaGraphForAgentRoles -WirePath "%.Agents" -ConductionSignal $conductionSignal | Select-Object -Last 1
+        if ($signal.MergeSignalAndVerifyFailure($agentGraphSignal)) {
+            $signal.LogCritical("❌ Failed to resolve AgentRoles graph from path 'Agents'.")
+            return $signal
+        }
+
+        $this.AgentGraph = $agentGraphSignal.GetResult()
+        $signal.LogInformation("🧠 AgentRoles Graph loaded successfully into Conductor.AgentGraph.")
         return $signal
     }
     

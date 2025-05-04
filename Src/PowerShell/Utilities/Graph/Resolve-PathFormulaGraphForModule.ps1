@@ -24,18 +24,17 @@ function Resolve-PathFormulaGraphForModule {
         $slot        = if ($segments.Count -ge 5) { $segments[4] } else { $null }
         $key         = if ($segments.Count -ge 6) { $segments[5] } else { $null }
 
-        # ░▒▓█ DERIVE FILE NAME █▓▒░
-        $fileStem = "$kind`_$type"
-        $fileName = "$fileStem.psd1"
+        # ░▒▓█ DERIVE MODULE NAME █▓▒░
+        $moduleStem = "$kind`_$type"
+        $moduleName = "$moduleStem.psd1"
 
         # ░▒▓█ CONSTRUCT RELATIVE PATH █▓▒░
-        $folderSegments = @("$project.$collection", 'Src') + @($kind, $type, 'PowerShell')
         $folderSegments = @("$project.$collection", 'Src', $kind, $type, 'PowerShell')
         $relativeFolderPath = [System.IO.Path]::Combine($folderSegments)
-        $relativeFilePath   = Join-Path $relativeFolderPath $fileName
+        $relativeFilePath   = Join-Path $relativeFolderPath $moduleName
 
         # ░▒▓█ REGISTER MODULE NODE █▓▒░
-        $nodeSignal = [Signal]::new($fileStem)
+        $nodeSignal = [Signal]::new($moduleStem)
         $nodeSignal.SetResult([ordered]@{
             Project            = $project
             Collection         = $collection
@@ -43,22 +42,23 @@ function Resolve-PathFormulaGraphForModule {
             Type               = $type
             Slot               = $slot
             Key                = $key
-            WirePath           = $WirePath
-            FullType           = $fileStem
-            Name               = $fileName
+            Name               = $moduleName
+            ModuleStem         = $moduleStem
+            VirtualPath        = $WirePath
+            FullType           = $moduleStem
             RelativeFolderPath = $relativeFolderPath
             RelativeFilePath   = $relativeFilePath
             HydrationIntent    = @(
                 @{
                     ConductionWirePath = "XYZ.Placeholder"
-                    TargetPath          = "Modules.$fileStem"
+                    TargetPath          = "Modules.$moduleStem"
                     SourcePath          = $relativeFilePath
-                    Format              = "json"
+                    Format              = "psd1"
                     Timing              = "Sequential"
                 }
             )
         })
-                
+
         $graph.RegisterSignal("Manifest", $nodeSignal)
         $graph.Finalize()
 

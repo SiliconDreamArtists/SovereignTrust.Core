@@ -25,6 +25,29 @@ function Resolve-PathFromDictionary {
         return $current
     }
 
+    function Expand-SymbolicPathSegments {
+        param (
+            [string[]]$RawSegments
+        )
+    
+        $symbolMap = @{
+            "%" = "Jacket"
+            "*" = "Pointer"
+            "@" = "Result"
+            "#" = "ControlSignal"
+        }
+    
+        $expanded = foreach ($segment in $RawSegments) {
+            if ($symbolMap.ContainsKey($segment)) {
+                $symbolMap[$segment]
+            } else {
+                $segment
+            }
+        }
+    
+        return $expanded
+    }
+
     try {
         # ░▒▓█ AUTO-ADJUST FINAL UNWRAP BASED ON PATH SUFFIX █▓▒░
         if (-not $SkipFinalInternalUnwrap -and $Path -match '(?i)(Graph|Signal|SignalGrid)$') {
@@ -32,7 +55,7 @@ function Resolve-PathFromDictionary {
             $signal.LogVerbose("🧠 SkipFinalInternalUnwrap auto-enabled for path suffix match: '$Path'")
         }
 
-        $parts = $Path -split '\.'
+        $parts = Expand-SymbolicPathSegments -RawSegments ($Path -split '\.')
         $current = $Dictionary
 
         foreach ($part in $parts) {

@@ -29,7 +29,7 @@ class Conduction {
     [object]$ConductionSignal
     [object]$ConductionResultSignal
 
-    [Signal]$Signal
+    [Signal]$ControlSignal
 
     Conduction() {
         # Preallocate a GUID directly at creation time

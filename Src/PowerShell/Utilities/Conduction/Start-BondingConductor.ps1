@@ -54,6 +54,11 @@ function Start-BondingConductor {
 
         $signal.LogInformation("✅ Conductor adapters resolved successfully.")
 
+        # ░▒▓█ RUN CONDUCTION TO START CONDUCTOR █▓▒░
+        #Review what we got from SP to integrate into a Conduit class, we need to launch the conduit and then run a conduction plan with a virtual path.
+
+        ## Need to generate a Conduction Graph to process by the Conductor.
+        $graphSignal = Resolve-PathFormulaGraph -WirePath $BondingConductor.VirtualPath -StrategyType "Condenser" -Conductor $BondingConductor -Environment $Environment | Select-Object -Last 1
 
         
         # ░▒▓█ COMPLETION █▓▒░
