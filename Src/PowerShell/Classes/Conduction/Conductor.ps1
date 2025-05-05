@@ -1,142 +1,107 @@
 # =============================================================================
 # 🚦 Conductor (SovereignTrust Execution Core)
 #  License: MIT License • Copyright (c) 2025 Silicon Dream Artists / BDDB
-#  Authors: Shadow PhanTom ☠️🧁👾️/🤖 • Neural Alchemist ⚗️☣️🐲 • Last Generated: 05/02/2025
-# =============================================================================
-# The Conductor initializes memory bonding, maps storage/network layers,
-# and manages primary/secondary agents via Conduits and Role graphs.
-# It tracks all activity through a local Graph + Signal structure.
+#  Authors: Shadow PhanTom ☠️🧁👾️/🤖 • Neural Alchemist ⚗️☣️🐲 • Version: 2025.5.4.8
 # =============================================================================
 
 class Conductor {
-    [string]$Id
-    [bool]$IsHostConductor = $false
-    [Conductor]$HostConductor
-    [object]$Environment
+    [Signal]$Signal  # 🧠 Sovereign memory vessel for this Conductor
 
-    [Graph]$AgentGraph
+    Conductor([Conductor]$hostConductor = $null, $conduction) {
+        $this.Signal = [Signal]::new("Conductor")
+        $this.Signal.SetJacket($conduction)
 
-    [object]$Jacket
-    [Graph]$Graph
-    [Signal]$ControlSignal
-    [string]$Status
+        Add-PathToDictionary -Dictionary $this -Path "#.%.HostConductor"   -Value $hostConductor        | Out-Null
+        Add-PathToDictionary -Dictionary $this -Path "#.%.IsHostConductor" -Value ($null -eq $hostConductor) | Out-Null
 
-    # Bonded memory inputs
-    [string]$AgentName
-    [string]$RoleName
-    [object]$PrimaryAgent
-    [System.Collections.Generic.List[object]]$AdapterJackets
+        if ($this.Signal.MergeAndVerifyFailure(($this.InitializeMemory()    | Select-Object -Last 1))) { return }
+        if ($this.Signal.MergeAndVerifyFailure(($this.LoadMappedAdapters() | Select-Object -Last 1))) { return }
+        if ($this.Signal.MergeAndVerifyFailure(($this.LoadAgentGraph()     | Select-Object -Last 1))) { return }
+    }
 
-    [System.Collections.Generic.List[object]]$SecondaryAgents
+    [Signal] InitializeMemory() {
+        $opSignal = [Signal]::new("Conductor.InitializeMemory")
 
-    # Mapped Adapter memory (resolved into Graph)
-    [Graph]$MappedAdapters
+        $envSignal = Resolve-PathFromDictionary -Dictionary $this -Path "#.%.Environment" | Select-Object -Last 1
+        if ($envSignal.Failure()) { return $opSignal.MergeSignal($envSignal) }
 
-    # Core conduit
-    [Conduit]$PrimaryConduit
+        $graph = [Graph]::new($envSignal.GetResult())
+        $this.Signal.SetPointer($graph)
 
-    Conductor([string]$id, [Conductor]$hostConductor = $null, $environment) {
-        $this.Id = $id
-        $this.Jacket = $environment
-        $this.HostConductor = $hostConductor
-        $this.Environment = $environment
-        $this.IsHostConductor = $null -eq $hostConductor
-
-        $this.ControlSignal = [Signal]::new("Conductor:$id")
-        $this.Graph = [Graph]::new($environment)
-        $this.MappedAdapters = [Graph]::new($environment)
-
-        $this.AdapterJackets = [System.Collections.Generic.List[object]]::new()
-        $this.SecondaryAgents = [System.Collections.Generic.List[object]]::new()
-        $this.Status = "Initialized"
-
-        $this.LoadMappedAdapters() | Out-Null
-        $this.LoadAgentGraph() | Out-Null
+        return $opSignal
     }
 
     [Signal] LoadMappedAdapters() {
-        $signal = [Signal]::new("Conductor.LoadMappedAdapters")
-    
-        # ░▒▓█ CONDENSER (IR–1) █▓▒░
-        $condenserSignal = $this.LoadMappedCondenserAdapter() | Select-Object -Last 1
-        if ($signal.MergeSignalAndVerifyFailure($condenserSignal)) {
-            $signal.LogCritical("❌ Failed to load mapped condenser adapter.")
-            return $signal
-        }
-    
-        # ░▒▓█ STORAGE & NETWORK █▓▒░
-        $this.MappedAdapters.RegisterResultAsSignal("Storage", [MappedStorageAdapter]::new($this)) | Out-Null
-        $this.MappedAdapters.RegisterResultAsSignal("Network", [MappedNetworkAdapter]::new($this)) | Out-Null
-    
-        $signal.LogInformation("🔌 MappedAdapters initialized: Storage, Network, Condenser.")
-        $this.ControlSignal.MergeSignal($signal)
-        return $signal
+        $opSignal = [Signal]::new("Conductor.LoadMappedAdapters")
+
+        $mapped = $this.LoadMappedCondenserAdapter() | Select-Object -Last 1
+        if ($opSignal.MergeSignalAndVerifyFailure($mapped)) { return $opSignal }
+
+        $graphSignal = Resolve-PathFromDictionary -Dictionary $this -Path "#.*" | Select-Object -Last 1
+        $graph = $graphSignal.GetResult()
+
+        $graph.RegisterResultAsSignal("Mapped.Storage", [MappedStorageAdapter]::new($this)) | Out-Null
+        $graph.RegisterResultAsSignal("Mapped.Network", [MappedNetworkAdapter]::new($this)) | Out-Null
+
+        return $opSignal
     }
-    
+
     [Signal] LoadAgentGraph() {
-        $signal = [Signal]::new("Conductor.LoadAgentGraph")
+        $opSignal = [Signal]::new("Conductor.LoadAgentGraph")
 
-        # ░▒▓█ WRAP SELF AS CONDUCTION SIGNAL █▓▒░
-        $conductionSignal = [Signal]::new("ConductionContext")
-        $conductionSignal.SetResult($this)
-        $conductionSignal.SetPointer($this.Graph)
-        $conductionSignal.LogVerbose("📦 Wrapped Conductor as ConductionSignal with self-pointer to primary Graph.")
+        $ctx = [Signal]::new("AgentGraph.Context")
+        $ctx.SetResult($this)
+        $ctx.SetJacket($this.Signal.GetJacket())
+        $ctx.SetPointer($this.Signal.Pointer)
 
-        # ░▒▓█ CALL FORMULA RESOLVER █▓▒░
-        $agentGraphSignal = Resolve-PathFormulaGraphForAgentRoles -WirePath "%.Agents" -ConductionSignal $conductionSignal | Select-Object -Last 1
-        if ($signal.MergeSignalAndVerifyFailure($agentGraphSignal)) {
-            $signal.LogCritical("❌ Failed to resolve AgentRoles graph from path 'Agents'.")
-            return $signal
-        }
+        $agentGraphSignal = Resolve-PathFormulaGraphForAgentRoles -WirePath "#.%.Environment.%.Agents" -ConductionSignal $ctx | Select-Object -Last 1
+        if ($opSignal.MergeSignalAndVerifyFailure($agentGraphSignal)) { return $opSignal }
 
-        $this.AgentGraph = $agentGraphSignal.GetResult()
-        $signal.LogInformation("🧠 AgentRoles Graph loaded successfully into Conductor.AgentGraph.")
-        return $signal
+        $graphSignal = Resolve-PathFromDictionary -Dictionary $this -Path "#.*" | Select-Object -Last 1
+        $graph = $graphSignal.GetResult()
+        $graph.RegisterSignal("AgentGraph", $agentGraphSignal)
+
+        return $opSignal
     }
-    
+
     [Signal] LoadMappedCondenserAdapter() {
-        $signal = [Signal]::new("Conductor.LoadMappedCondenserAdapter")
-    
-        # ░▒▓█ BUILD + REGISTER CONDENSER WRAPPER █▓▒░
-        $mappedSignal = New-MappedCondenserAdapterFromGraph -Conductor $this | Select-Object -Last 1
-        if ($signal.MergeSignalAndVerifyFailure($mappedSignal)) {
-            $signal.LogWarning("⚠️ Condenser adapter creation failed.")
-            return $signal
-        }
-    
-        $signal.LogInformation("🧪 Condenser adapter registered successfully.")
-        return $signal
+        $opSignal = [Signal]::new("Conductor.LoadMappedCondenserAdapter")
+
+        $condenserSignal = New-MappedCondenserAdapterFromGraph -Conductor $this | Select-Object -Last 1
+        if ($opSignal.MergeSignalAndVerifyFailure($condenserSignal)) { return $opSignal }
+
+        $graphSignal = Resolve-PathFromDictionary -Dictionary $this -Path "#.*" | Select-Object -Last 1
+        $graph = $graphSignal.GetResult()
+        $graph.RegisterSignal("Mapped.Condenser", $condenserSignal)
+
+        return $opSignal
     }
-        
+
     [Signal] AttachPrimaryConduit([Conduit]$conduit) {
-        $signal = [Signal]::new("Conductor.AttachPrimaryConduit")
+        $opSignal = [Signal]::new("Conductor.AttachPrimaryConduit")
 
-        $this.PrimaryConduit = $conduit
-        $this.Status = "ConduitAttached"
+        $graphSignal = Resolve-PathFromDictionary -Dictionary $this -Path "#.*" | Select-Object -Last 1
+        $graph = $graphSignal.GetResult()
+        $graph.RegisterResultAsSignal("PrimaryConduit", $conduit)
 
-        $signal.LogInformation("🧵 Primary conduit attached to Conductor: $($this.Id)")
-        $this.ControlSignal.MergeSignal($signal)
-        return $signal
-    }
-
-    [Signal] StartRole([string]$agentName, [string]$roleName, [object]$agent) {
-        $signal = [Signal]::new("Conductor.StartRole:$roleName")
-
-        $this.AgentName = $agentName
-        $this.RoleName = $roleName
-        $this.PrimaryAgent = $agent
-
-        $signal.LogInformation("🎭 Role started for Agent '$agentName' with Role '$roleName'")
-        $this.ControlSignal.MergeSignal($signal)
-        return $signal
+        $opSignal.LogInformation("🧵 Primary conduit attached to graph memory.")
+        return $opSignal
     }
 
     [Signal] AttachSecondaryAgent([object]$agent) {
-        $signal = [Signal]::new("Conductor.AttachSecondaryAgent")
+        $opSignal = [Signal]::new("Conductor.AttachSecondaryAgent")
 
-        $this.SecondaryAgents.Add($agent)
-        $signal.LogInformation("➕ Secondary agent attached.")
-        $this.ControlSignal.MergeSignal($signal)
-        return $signal
+        $agentsPath = "#.*.SecondaryAgents"
+        $listSignal = Resolve-PathFromDictionary -Dictionary $this -Path $agentsPath | Select-Object -Last 1
+
+        $agentList = $listSignal.GetResult()
+        if ($null -eq $agentList) {
+            $agentList = [System.Collections.Generic.List[object]]::new()
+            Add-PathToDictionary -Dictionary $this -Path $agentsPath -Value $agentList | Out-Null
+        }
+
+        $agentList.Add($agent)
+        $opSignal.LogInformation("➕ Secondary agent added.")
+        return $opSignal
     }
 }

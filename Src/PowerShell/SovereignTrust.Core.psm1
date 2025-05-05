@@ -1,5 +1,5 @@
 # Load all files (functions + classes)
-. "$PSScriptRoot/Classes/Graph/Graph.ps1"
+. "$PSScriptRoot/Classes/Conduction/Graph.ps1"
 
 . "$PSScriptRoot/Classes/Adapters/UX/ConsoleLogger.ps1"
 #. "$PSScriptRoot/Classes/Adapters/Condenser/JsonHelper.ps1"
@@ -8,16 +8,12 @@
 . "$PSScriptRoot/Classes/Adapters/MappedNetworkAdapter.ps1"
 . "$PSScriptRoot/Classes/Adapters/MappedCondenserAdapter.ps1"
 
-. "$PSScriptRoot/Classes/Conduit/Conduit.ps1"
-. "$PSScriptRoot/Classes/Conduction/Conduction.ps1"
-. "$PSScriptRoot/Classes/Conduction/ConductionSignal.ps1"
-. "$PSScriptRoot/Classes/Conduction/ConductionResultSignal.ps1"
+. "$PSScriptRoot/Classes/Conduction/Conduit.ps1"
 . "$PSScriptRoot/Classes/Conduction/Conductor.ps1"
-. "$PSScriptRoot/Classes/Conduit/Complete-Conduction.ps1"
-. "$PSScriptRoot/Classes/Conduit/Invoke-Conduction.ps1"
-. "$PSScriptRoot/Classes/Conduit/Start-Conduction.ps1"
-. "$PSScriptRoot/Classes/Memory/Jacket.ps1"
-. "$PSScriptRoot/Classes/Memory/Wire.ps1"
+. "$PSScriptRoot/Utilities/Conduction/Complete-Conduction.ps1"
+. "$PSScriptRoot/Utilities/Conduction/Invoke-Conduction.ps1"
+. "$PSScriptRoot/Utilities/Conduction/Start-BondingConduction.ps1"
+. "$PSScriptRoot/Utilities/Conduction/Start-Conduction.ps1"
 
 . "$PSScriptRoot/Classes/Adapters/Storage/Storage_EmbeddedFileSystem.ps1"
 
@@ -34,17 +30,6 @@
 
 . "$PSScriptRoot/Classes/Adapters/BaseAdapter.ps1"
 
-#. "$PSScriptRoot/Classes/Adapters/Condenser/CondenserGraphHelper.ps1"
-. "$PSScriptRoot/Classes/Graph/Context.ps1"
-. "$PSScriptRoot/Classes/Graph/ContextReplacement.ps1"
-. "$PSScriptRoot/Classes/Graph/GraphReplacementType.ps1"
-. "$PSScriptRoot/Classes/Adapters/Condenser/Model/GlobalCondenserSignal.ps1"
-. "$PSScriptRoot/Classes/Adapters/Condenser/Model/GlobalCondenserProposal.ps1"
-. "$PSScriptRoot/Classes/Adapters/Condenser/Model/MapCondenserSignal.ps1"
-. "$PSScriptRoot/Classes/Adapters/Condenser/Model/MapCondenserProposal.ps1"
-. "$PSScriptRoot/Classes/Adapters/Condenser/Model/MergeCondenserSignalSettings.ps1"
-. "$PSScriptRoot/Classes/Adapters/Condenser/Model/MergeCondenserSignal.ps1"
-#. "$PSScriptRoot/Classes/Adapters/Condenser/Model/MergeCondenserProposal.ps1"
 . "$PSScriptRoot/Classes/Adapters/Condenser/GlobalCondenser.ps1"
 . "$PSScriptRoot/Classes/Adapters/Condenser/MapCondenser.ps1"
 . "$PSScriptRoot/Classes/Adapters/Condenser/HydrationCondenser.ps1"
@@ -97,6 +82,7 @@
 Export-ModuleMember -Function Convert-AgentAdaptersToConductor
 Export-ModuleMember -Function Get-AgentForConductor
 Export-ModuleMember -Function Start-BondingConductor
+Export-ModuleMember -Function Start-BondingConduction
 Export-ModuleMember -Function Add-PathToDictionary
 Export-ModuleMember -Function Convert-JsonToHashtable
 Export-ModuleMember -Function Get-DictionaryValue

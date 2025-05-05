@@ -34,7 +34,7 @@ function Resolve-PathFromDictionary {
             "%" = "Jacket"
             "*" = "Pointer"
             "@" = "Result"
-            "#" = "ControlSignal"
+            "#" = "Signal"
         }
     
         $expanded = foreach ($segment in $RawSegments) {

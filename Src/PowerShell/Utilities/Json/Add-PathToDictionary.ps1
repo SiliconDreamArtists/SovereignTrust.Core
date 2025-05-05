@@ -1,30 +1,94 @@
 function Add-PathToDictionary {
     param (
-        [Parameter(Mandatory)]
-        $Dictionary,
-
-        [Parameter(Mandatory)]
-        [string]$Path,
-
-        [Parameter()]
-        $Value
+        [Parameter(Mandatory)] $Dictionary,
+        [Parameter(Mandatory)] [string]$Path,
+        [Parameter()] $Value
     )
 
     $signal = [Signal]::new("Add-PathToDictionary")
 
+    function Expand-SymbolicPathSegments {
+        param ([string[]]$RawSegments)
+        $symbolMap = @{
+            "%" = "Jacket"
+            "*" = "Pointer"
+            "@" = "Result"
+            "#" = "Signal"
+        }
+        return $RawSegments | ForEach-Object {
+            if ($symbolMap.ContainsKey($_)) { $symbolMap[$_] } else { $_ }
+        }
+    }
+
+    function Unwrap-InternalObjects {
+        param (
+            [object]$obj,
+            [string]$segment
+        )
+        $current = $obj
+        $check = $true
+        while ($check) {
+            $check = $false
+            if ($current -is [Signal] -and $segment -ne 'Jacket') {
+                $current = $current.GetResult()
+                $check = $true
+            } elseif ($current -is [Graph]) {
+                $current = $current.SignalGrid
+                $check = $true
+            }
+        }
+        return $current
+    }
+
+    function Parse-FilterSegment {
+        param([string]$segment)
+        $result = @{ IsFilter = $false; Raw = $segment }
+        if ($segment -match '^([^\[]+)') { $result.ArrayKey = $matches[1] } else { return $result }
+        $filterPattern = '\[([^\[\]=!~]+?)(!?=|~=|~=i)\s*(["''"])(.*?)\3\]'
+        $matches = [regex]::Matches($segment, $filterPattern)
+        if ($matches.Count -gt 0) {
+            $result.IsFilter = $true
+            $result.Filters = @()
+            foreach ($m in $matches) {
+                $op = switch ($m.Groups[2].Value) {
+                    '='     { '-eq' }
+                    '!='    { '-ne' }
+                    '~='    { '-like' }
+                    '~=i'   { '-ilike' }
+                    default { '-eq' }
+                }
+                $result.Filters += @{ Key = $m.Groups[1].Value.Trim(); Op = $op; Value = $m.Groups[4].Value.Trim() }
+            }
+        }
+        return $result
+    }
+
     try {
-        $parts = $Path -split '\.'
+        $parts = Expand-SymbolicPathSegments -RawSegments ($Path -split '\.')
         $current = $Dictionary
 
         for ($i = 0; $i -lt $parts.Length; $i++) {
-            $key = $parts[$i]
+            $part = $parts[$i]
             $isLast = ($i -eq $parts.Length - 1)
+
+            if ($null -eq $current) {
+                $signal.LogCritical("Current object is null while traversing path segment '$part'.")
+                return $signal
+            }
+
+            $parsed = Parse-FilterSegment $part
+            if ($parsed.IsFilter) {
+                $signal.LogCritical("Add-PathToDictionary does not support filtered segments like '$part'.")
+                return $signal
+            }
+
+            $current = Unwrap-InternalObjects -obj $current -segment $parsed.Raw
+            $key = $parsed.Raw
 
             if ($current -is [System.Collections.IDictionary]) {
                 if ($isLast) {
                     $current[$key] = $Value
-                }
-                elseif (-not $current.Contains($key)) {
+                } elseif (-not $current.Contains($key)) {
                     $current[$key] = @{}
                 }
                 $current = $current[$key]
@@ -34,40 +98,31 @@ function Add-PathToDictionary {
                     if ($isLast) {
                         $found = $null
                         $index = 0
-
                         foreach ($item in $current) {
                             if (($item -is [pscustomobject] -or $item -is [hashtable]) -and $item.Name -eq $key) {
-                                $found = $item
-                                break
+                                $found = $item; break
                             }
                             $index++
                         }
-
                         if ($null -ne $found) {
                             $current[$index] = $Value
-                        }
-                        else {
+                        } else {
                             $current.Add($Value)
                         }
-                    }
-                    else {
+                    } else {
                         $found = $null
                         foreach ($item in $current) {
                             if (($item -is [pscustomobject] -or $item -is [hashtable]) -and $item.Name -eq $key) {
-                                $found = $item
-                                break
+                                $found = $item; break
                             }
                         }
-
                         if ($null -eq $found) {
                             $signal.LogWarning("No item with Name '$key' found in array segment.")
                             return $signal
                         }
-
                         $current = $found
                     }
-                }
-                else {
+                } else {
                     $signal.LogCritical("Cannot add to non-list enumerable at path segment '$key'.")
                     return $signal
                 }
@@ -77,18 +132,15 @@ function Add-PathToDictionary {
                 if ($isLast) {
                     if ($existingProp) {
                         $current.$key = $Value
-                    }
-                    else {
+                    } else {
                         Add-Member -InputObject $current -MemberType NoteProperty -Name $key -Value $Value
                     }
-                }
-                else {
+                } else {
                     if (-not $existingProp) {
                         $child = [PSCustomObject]@{}
                         Add-Member -InputObject $current -MemberType NoteProperty -Name $key -Value $child
                         $current = $child
-                    }
-                    else {
+                    } else {
                         $current = $current.$key
                     }
                 }
@@ -101,8 +153,7 @@ function Add-PathToDictionary {
                 }
                 if ($isLast) {
                     $propInfo.SetValue($current, $Value, $null)
-                }
-                else {
+                } else {
                     $next = $propInfo.GetValue($current, $null)
                     if ($null -eq $next) {
                         $signal.LogCritical("Intermediate class property '$key' is null; cannot proceed.")
@@ -110,8 +161,7 @@ function Add-PathToDictionary {
                     }
                     $current = $next
                 }
-            }
-            else {
+            } else {
                 $signal.LogCritical("Unsupported object type: $($current.GetType().FullName) at path '$Path'.")
                 return $signal
             }

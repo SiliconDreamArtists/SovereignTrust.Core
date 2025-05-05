@@ -4,58 +4,65 @@ function Resolve-PathFormulaGraphForAgentRoles {
         [Parameter(Mandatory)][Signal]$ConductionSignal
     )
 
-    $signal = [Signal]::new("Resolve-AgentRolesGraph:$WirePath")
+    $opSignal = [Signal]::new("Resolve-AgentRolesGraph:$WirePath")
 
-    # ░▒▓█ EXTRACT ROOT STRUCTURE █▓▒░
+    # ░▒▓█ EXTRACT ROOT AGENTS ARRAY █▓▒░
     $agentSetSignal = Resolve-PathFromDictionary -Dictionary $ConductionSignal -Path $WirePath | Select-Object -Last 1
-    if ($signal.MergeSignalAndVerifyFailure($agentSetSignal)) {
-        $signal.LogCritical("❌ Failed to resolve Agents array from: $WirePath")
-        return $signal
+    if ($opSignal.MergeSignalAndVerifyFailure($agentSetSignal)) {
+        $opSignal.LogCritical("❌ Failed to resolve Agents array from path: $WirePath")
+        return $opSignal
     }
 
     $agents = $agentSetSignal.GetResult()
 
     # ░▒▓█ GET ENVIRONMENT █▓▒░
-    $envSignal = Resolve-PathFromDictionary -Dictionary $ConductionSignal -Path "Environment" | Select-Object -Last 1
-    if ($signal.MergeSignalAndVerifyFailure($envSignal)) {
-        $signal.LogCritical("❌ Missing Environment from ConductionSignal.")
-        return $signal
+    $envSignal = Resolve-PathFromDictionary -Dictionary $ConductionSignal -Path "%.Environment" | Select-Object -Last 1
+    if ($opSignal.MergeSignalAndVerifyFailure($envSignal)) {
+        $opSignal.LogCritical("❌ Environment resolution failed.")
+        return $opSignal
     }
 
     $environment = $envSignal.GetResult()
     $agentGraph = [Graph]::new($environment)
     $agentGraph.Start()
 
-    # ░▒▓█ TRAVERSE AGENTS █▓▒░
     $agentIndex = 0
     foreach ($agent in $agents) {
-        $agentName = $agent.Name
+        # Resolve agent name via path instead of direct property
+        $agentNameSignal = Resolve-PathFromDictionary -Dictionary $agent -Path "Name" | Select-Object -Last 1
+        $agentName = $agentNameSignal.GetResult()
         if (-not $agentName) {
-            $signal.LogWarning("⚠️ Agent at index $agentIndex missing Name; skipping.")
+            $opSignal.LogWarning("⚠️ Agent at index $agentIndex missing Name; skipping.")
             continue
         }
 
-        # ░▒▓█ CREATE ROLE GRAPH FOR THIS AGENT █▓▒░
+        # ░▒▓█ CREATE ROLE GRAPH FOR AGENT █▓▒░
         $roleGraph = [Graph]::new($environment)
         $roleGraph.Start()
 
+        $rolesSignal = Resolve-PathFromDictionary -Dictionary $agent -Path "Roles" | Select-Object -Last 1
+        $roles = $rolesSignal.GetResult()
         $roleIndex = 0
-        foreach ($role in $agent.Roles) {
-            $roleName = $role.Name
+
+        foreach ($role in $roles) {
+            $roleNameSignal = Resolve-PathFromDictionary -Dictionary $role -Path "Name" | Select-Object -Last 1
+            $roleName = $roleNameSignal.GetResult()
+
             if (-not $roleName) {
-                $signal.LogWarning("⚠️ Role at index $roleIndex in Agent $agentName is unnamed; skipping.")
+                $opSignal.LogWarning("⚠️ Role at index $roleIndex in Agent '$agentName' missing Name; skipping.")
                 continue
             }
 
             $roleSignal = [Signal]::new("$agentName.$roleName")
             $roleSignal.SetJacket($role)
             $roleGraph.RegisterSignal($roleName, $roleSignal)
+
             $roleIndex++
         }
 
         $roleGraph.Finalize()
 
-        # ░▒▓█ WRAP AGENT SIGNAL WITH ROLE GRAPH POINTER █▓▒░
+        # ░▒▓█ WRAP AGENT WITH ROLE POINTER █▓▒░
         $agentSignal = [Signal]::new($agentName)
         $agentSignal.SetJacket($agent)
         $agentSignal.SetPointer($roleGraph)
@@ -65,8 +72,7 @@ function Resolve-PathFormulaGraphForAgentRoles {
     }
 
     $agentGraph.Finalize()
-    $signal.SetResult($agentGraph)
-    $signal.LogInformation("✅ AgentRoles Graph built with $agentIndex agent(s).")
-
-    return $signal
+    $opSignal.SetResult($agentGraph)
+    $opSignal.LogInformation("✅ AgentRoles graph built with $agentIndex agent(s).")
+    return $opSignal
 }

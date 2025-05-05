@@ -4,29 +4,46 @@ function Resolve-PathFormulaGraphForConduction {
         [Parameter(Mandatory)][object]$Conductor
     )
 
-    $signal = [Signal]::new("Resolve-PathFormulaGraphForConduction:$WirePath")
-    $graph = [Graph]::new($Conductor.Environment)
+    $opSignal = [Signal]::new("Resolve-PathFormulaGraphForConduction:$WirePath")
+
+    # ░▒▓█ GET ENVIRONMENT █▓▒░
+    $envSignal = Resolve-PathFromDictionary -Dictionary $Conductor -Path "%.Environment" | Select-Object -Last 1
+    if ($opSignal.MergeSignalAndVerifyFailure($envSignal)) {
+        $opSignal.LogCritical("❌ Unable to resolve environment from conductor.")
+        return $opSignal
+    }
+
+    $environment = $envSignal.GetResult()
+    $graph = [Graph]::new($environment)
     $graph.Start()
 
     try {
         # ░▒▓█ RESOLVE CONDUCTIONS ARRAY █▓▒░
-        $conductionsSignal = Resolve-PathFromDictionary -Dictionary $Conductor -Path $WirePath
-        if (-not ($signal.MergeAndVerifySuccess($conductionsSignal))) {
-            return $signal
+        $conductionsSignal = Resolve-PathFromDictionary -Dictionary $Conductor -Path $WirePath | Select-Object -Last 1
+        if ($opSignal.MergeSignalAndVerifyFailure($conductionsSignal)) {
+            $opSignal.LogCritical("❌ Failed to resolve conductions at: $WirePath")
+            return $opSignal
         }
 
         $conductions = $conductionsSignal.GetResult()
         if (-not $conductions -or $conductions.Count -eq 0) {
-            $signal.LogCritical("❌ No conduction entries found at: $WirePath")
-            return $signal
+            $opSignal.LogCritical("❌ No conduction entries found.")
+            return $opSignal
         }
 
         $index = 0
         foreach ($conduction in $conductions) {
-            $vp = $conduction.VirtualPath
+            $vpSignal = Resolve-PathFromDictionary -Dictionary $conduction -Path "VirtualPath" | Select-Object -Last 1
+            $vp = $vpSignal.GetResult()
+
+            if (-not $vp) {
+                $opSignal.LogWarning("⚠️ Missing VirtualPath in conduction entry at index $index; skipping.")
+                continue
+            }
+
             $vpSegments = $vp -split '\.'
             if ($vpSegments.Count -lt 4) {
-                $signal.LogWarning("⚠️ Skipping malformed VirtualPath: $vp")
+                $opSignal.LogWarning("⚠️ Malformed VirtualPath '$vp'; skipping.")
                 continue
             }
 
@@ -38,7 +55,8 @@ function Resolve-PathFormulaGraphForConduction {
             $relativeFolderPath = [System.IO.Path]::Combine($folderSegments)
             $relativeFilePath = Join-Path $relativeFolderPath $fileName
 
-            $nodeSignal = [Signal]::new("Conduction:$($stem):$index")
+            # ░▒▓█ CREATE CONDUCTION NODE SIGNAL █▓▒░
+            $nodeSignal = [Signal]::new("Conduction:$stem:$index")
             $nodeSignal.SetResult([ordered]@{
                 Project            = $vpSegments[0]
                 Collection         = $vpSegments[1]
@@ -64,20 +82,21 @@ function Resolve-PathFormulaGraphForConduction {
             })
 
             $registrationSignal = $graph.RegisterSignal("Conduction:$stem:$index", $nodeSignal)
-            if (-not ($signal.MergeAndVerifySuccess($registrationSignal))) {
-                return $signal
+            if ($opSignal.MergeSignalAndVerifyFailure($registrationSignal)) {
+                $opSignal.LogCritical("❌ Failed to register conduction $stem at index $index.")
+                return $opSignal
             }
 
             $index++
         }
 
         $graph.Finalize()
-        $signal.SetResult($graph)
-        $signal.LogInformation("✅ Graph populated with $index conduction(s) from: $WirePath")
+        $opSignal.SetResult($graph)
+        $opSignal.LogInformation("✅ Graph populated with $index conduction(s) from: $WirePath")
     }
     catch {
-        $signal.LogCritical("🔥 Exception during Resolve-PathFormulaGraphForConduction: $($_.Exception.Message)")
+        $opSignal.LogCritical("🔥 Exception while building graph: $($_.Exception.Message)")
     }
 
-    return $signal
+    return $opSignal
 }

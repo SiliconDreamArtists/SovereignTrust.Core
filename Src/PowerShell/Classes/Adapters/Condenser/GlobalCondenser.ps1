@@ -8,7 +8,7 @@ class GlobalCondenser {
     }
 
     [object] Condense($CondenseProposal, $CancellationToken = $null) {
-        $signal = [Signal]::Start([GlobalCondenserSignal]::new())
+        $signal = [Signal]::Start([object]::new())
         $result = $this.LoadItem($CondenseProposal, $signal.Result, $CondenseProposal.Wire, $CondenseProposal.WireMergeType, $CondenseProposal.Reload, $CondenseProposal.LoadLevel, $CondenseProposal.AutoRunConductionLevel)
         $signal.MergeSignal($result)
         return $signal

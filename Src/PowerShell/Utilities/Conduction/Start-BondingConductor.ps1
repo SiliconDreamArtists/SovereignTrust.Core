@@ -1,73 +1,61 @@
 function Start-BondingConductor {
+    [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $true)]
-        $Environment,
-
-        [Parameter(Mandatory = $true)]
-        [string]$AgentName,
-
-        [Parameter(Mandatory = $true)]
-        [string]$BondRoleName,
-
-        [Parameter(Mandatory = $true)]
-        [string]$RoleName
+        [Parameter(Mandatory)]
+        [Signal]$ConductionSignal
     )
 
-    $signal = [Signal]::new("Start-BondingConductor")
+    $opSignal = [Signal]::new("Start-BondingConductor")
 
     try {
-        # ░▒▓█ AGENT RESOLUTION █▓▒░
-        $agentSignal = Get-AgentForConductor -Environment $Environment -AgentName $AgentName -RoleName $RoleName | Select-Object -Last 1
-        if ($signal.MergeSignalAndVerifyFailure($agentSignal)) {
-            $signal.LogCritical("❌ Failed to resolve Agent and Role binding.")
-            return $signal
+        # ░▒▓█ RESOLVE ENVIRONMENT █▓▒░
+        $envSignal = Resolve-PathFromDictionary -Dictionary $ConductionSignal -Path "Environment" | Select-Object -Last 1
+        if ($opSignal.MergeSignalAndVerifyFailure($envSignal)) {
+            $opSignal.LogCritical("❌ Failed to resolve Environment from ConductionSignal.")
+            return $opSignal
         }
 
-        $PrimaryAgent = $agentSignal.GetResult()
+        $environment = $envSignal.GetResult()
 
-        # ░▒▓█ CONDUCTOR INITIALIZATION █▓▒░
-        $BondingConductor = [Conductor]::new([guid]::NewGuid().ToString(), $null, $Environment)
-        $BondingConductor.Environment     = $Environment
-        $BondingConductor.AgentName       = $AgentName
-        $BondingConductor.RoleName        = $RoleName
-        $BondingConductor.PrimaryAgent    = $PrimaryAgent
-        $BondingConductor.SecondaryAgents = [System.Collections.Generic.List[object]]::new()
-        $BondingConductor.Status          = "Initializing"
+        # ░▒▓█ INSTANTIATE CONDUCTOR █▓▒░
+        $bondingConductor = [Conductor]::new($null, $ConductionSignal)
+        Add-PathToDictionary -Dictionary $bondingConductor -Path "Signal.%.Status" -Value "Initializing" | Out-Null
 
-        $signal.LogInformation("✅ BondingConductor created for Agent: $AgentName with Role: $RoleName.")
+        $opSignal.LogInformation("✅ BondingConductor initialized from ConductionSignal.")
 
-        # ░▒▓█ ATTACHMENT MAPPING █▓▒░
-        $attachSignal = Convert-AgentAdaptersToConductor -Agent $PrimaryAgent -RoleName $BondRoleName -Conductor $BondingConductor | Select-Object -Last 1
-        if ($signal.MergeSignalAndVerifyFailure($attachSignal)) {
-            $signal.LogCritical("❌ Failed to map Agent Role adapter jackets into Bonding Conductor.")
-            return $signal
+        # ░▒▓█ CONVERT AND ATTACH AGENT ADAPTERS █▓▒░
+        $adapterSignal = Convert-AgentAdaptersToConductor -Conductor $bondingConductor | Select-Object -Last 1
+        if ($opSignal.MergeSignalAndVerifyFailure($adapterSignal)) {
+            $opSignal.LogCritical("❌ Adapter conversion failed during bonding process.")
+            return $opSignal
         }
 
-        $signal.LogInformation("✅ Agent and Role adapter jackets mapped into BondingConductor.")
-
-        # ░▒▓█ ATTACHMENT RESOLUTION █▓▒░
-        $resolveSignal = Resolve-ConductorAdapters -Conductor $BondingConductor | Select-Object -Last 1
-        if ($signal.MergeSignalAndVerifyFailure($resolveSignal)) {
-            $signal.LogCritical("❌ Failed to resolve Conductor adapters.")
-            return $signal
+        $resolveSignal = Resolve-ConductorAdapters -Conductor $bondingConductor | Select-Object -Last 1
+        if ($opSignal.MergeSignalAndVerifyFailure($resolveSignal)) {
+            $opSignal.LogCritical("❌ Conductor adapter resolution failed.")
+            return $opSignal
         }
 
-        $signal.LogInformation("✅ Conductor adapters resolved successfully.")
+        $opSignal.LogInformation("🔌 Conductor adapters converted and resolved.")
 
-        # ░▒▓█ RUN CONDUCTION TO START CONDUCTOR █▓▒░
-        #Review what we got from SP to integrate into a Conduit class, we need to launch the conduit and then run a conduction plan with a virtual path.
+        # ░▒▓█ RESOLVE CONDUCTION PLAN GRAPH █▓▒░
+        $vpSignal = Resolve-PathFromDictionary -Dictionary $bondingConductor -Path "Signal.%.VirtualPath" | Select-Object -Last 1
+        if ($opSignal.MergeSignalAndVerifyFailure($vpSignal)) {
+            $opSignal.LogCritical("❌ Missing VirtualPath in BondingConductor.")
+            return $opSignal
+        }
 
-        ## Need to generate a Conduction Graph to process by the Conductor.
-        $graphSignal = Resolve-PathFormulaGraph -WirePath $BondingConductor.VirtualPath -StrategyType "Condenser" -Conductor $BondingConductor -Environment $Environment | Select-Object -Last 1
+        $virtualPath = $vpSignal.GetResult()
+        $planSignal = Resolve-PathFormulaGraph -WirePath $virtualPath -StrategyType "Condenser" -Conductor $bondingConductor -Environment $environment | Select-Object -Last 1
+        $opSignal.MergeSignal($planSignal)
 
-        
-        # ░▒▓█ COMPLETION █▓▒░
-        $signal.SetResult($BondingConductor)
-        $signal.LogInformation("🎯 Start-BondingConductor initialization completed successfully.")
+        # ░▒▓█ RETURN CONDUCTOR █▓▒░
+        $opSignal.SetResult($bondingConductor)
+        $opSignal.LogInformation("🎯 BondingConductor started and ConductionPlan graph resolved.")
     }
     catch {
-        $signal.LogCritical("🔥 Unhandled failure in Start-BondingConductor: $($_.Exception.Message)")
+        $opSignal.LogCritical("🔥 Exception during Start-BondingConductor: $($_.Exception.Message)")
     }
 
-    return $signal
+    return $opSignal
 }

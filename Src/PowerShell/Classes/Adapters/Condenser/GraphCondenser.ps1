@@ -13,7 +13,7 @@ class GraphCondenser {
         $this.MappedCondenserAdapter = $mappedCondenserAdapter
     }
 
-    [Signal] CondenseMini([GraphCondenserProposal]$Proposal, [object]$CancellationToken, [string]$OverrideTemplatePath = $null) {
+    [Signal] CondenseMini([object]$Proposal, [object]$CancellationToken, [string]$OverrideTemplatePath = $null) {
         $signal = [Signal]::new("CondenseMini")
         $signal.Result = [PSCustomObject]@{ Content = "" }
 
