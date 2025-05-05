@@ -1,14 +1,14 @@
-# 📦 Attachment Manifest Doctrine
+# 📦 Adapter Manifest Doctrine
 
 ## 📖 Title
-**Attachment Manifest Doctrine**
+**Adapter Manifest Doctrine**
 
 ## 🌟 Purpose
-Defines rules for attachment resolution, virtual path usage, manifest hydration, and secure instantiation.
+Defines rules for adapter resolution, virtual path usage, manifest hydration, and secure instantiation.
 
 ---
 
-## I. Every Attachment Has a VirtualPath
+## I. Every Adapter Has a VirtualPath
 
 - This path identifies the location of the attachment's Manifest file.
 - Used by `Resolve-DependencyModuleFromGraph` to load and hydrate the module.
@@ -33,22 +33,22 @@ Defines rules for attachment resolution, virtual path usage, manifest hydration,
 
 ---
 
-## IV. Attachments Must Be Signalized
+## IV. Adapters Must Be Signalized
 
-- All resolved attachments must be stored in signals.
+- All resolved adapters must be stored in signals.
 - Placement:
   - `Memory.Attachments.{Name}`
   - `Mapped{Kind}Attachments[{Slot}]`
 
 ---
 
-## V. Attachments Must Be Verified
+## V. Adapters Must Be Verified
 
 - Use `.Test()` or `.Verify()` methods when available.
-- Ensure attachments are not null and responsive.
+- Ensure adapters are not null and responsive.
 
 ---
 
 ## 🧠 Summary
 
-Attachments are the sovereign execution surfaces of the system. No operation may use external capability unless it is declared, loaded, and traced via an attachment manifest.
+Adapters are the sovereign execution surfaces of the system. No operation may use external capability unless it is declared, loaded, and traced via an adapter manifest.
