@@ -21,7 +21,7 @@ function Invoke-TestGraph {
     }
 
     # ░▒▓█ CREATE SIGNAL █▓▒░
-    $depSignal = [Signal]::new("Dependencies")
+    $depSignal = [Signal]::Start("Dependencies")
     $depSignal.SetPointer($pointerJacket)
 
     # ░▒▓█ LOAD JSON MEMORY INTO SIGNAL █▓▒░

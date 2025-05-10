@@ -4,14 +4,19 @@ function New-MappedCondenserAdapterFromGraph {
         [object]$Conductor
     )
 
-    $signal = [Signal]::new("New-MappedCondenserAdapterFromGraph")
+    $signal = [Signal]::Start("New-MappedCondenserAdapterFromGraph")
 
     try {
         # ░▒▓█ INIT EMPTY MAPPED CONDENSER █▓▒░
         $mappedAdapter = [MappedCondenserAdapter]::new($Conductor)
 
         # ░▒▓█ REGISTER IN CONDUCTOR FOR INTROSPECTION █▓▒░
-        $registerSignal = $Conductor.MappedAdapters.RegisterResultAsSignal("Condenser", $mappedAdapter)
+   #     $registerSignal = $Conductor.MappedAdapters.RegisterResultAsSignal("Condenser", $mappedAdapter)
+
+        $graphSignal = Resolve-PathFromDictionary -Dictionary $Conductor -Path "$.*" | Select-Object -Last 1
+        $graph = $graphSignal.GetResult()
+        $registerSignal = $graph.RegisterResultAsSignal("MappedCondenser", $mappedAdapter)
+
         if ($signal.MergeSignalAndVerifyFailure($registerSignal)) {
             $signal.LogCritical("❌ Failed to register empty Condenser adapter.")
             return $signal
@@ -33,8 +38,8 @@ function New-MappedCondenserAdapterFromGraph {
         $graphObject = $graph.GetResult()
 
         # ░▒▓█ REGISTER EACH CONDENSER █▓▒░
-        foreach ($key in $graphObject.SignalGrid.Keys) {
-            $adapterSignal = $graphObject.SignalGrid[$key]
+        foreach ($key in $graphObject.Grid.Keys) {
+            $adapterSignal = $graphObject.Grid[$key]
             $adapter = $adapterSignal.GetResult()
 
             if ($null -ne $adapter) {

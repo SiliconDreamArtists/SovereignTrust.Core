@@ -5,18 +5,9 @@ function Start-BondingConductor {
         [Signal]$ConductionSignal
     )
 
-    $opSignal = [Signal]::new("Start-BondingConductor")
+    $opSignal = [Signal]::Start("Start-BondingConductor")
 
     try {
-        # ░▒▓█ RESOLVE ENVIRONMENT █▓▒░
-        $envSignal = Resolve-PathFromDictionary -Dictionary $ConductionSignal -Path "Environment" | Select-Object -Last 1
-        if ($opSignal.MergeSignalAndVerifyFailure($envSignal)) {
-            $opSignal.LogCritical("❌ Failed to resolve Environment from ConductionSignal.")
-            return $opSignal
-        }
-
-        $environment = $envSignal.GetResult()
-
         # ░▒▓█ INSTANTIATE CONDUCTOR █▓▒░
         $bondingConductor = [Conductor]::new($null, $ConductionSignal)
         Add-PathToDictionary -Dictionary $bondingConductor -Path "Signal.%.Status" -Value "Initializing" | Out-Null

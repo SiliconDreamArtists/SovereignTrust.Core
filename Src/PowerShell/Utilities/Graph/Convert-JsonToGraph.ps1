@@ -7,7 +7,7 @@ function Convert-JsonToGraph {
         [bool]$IgnoreInternalObjects = $false
     )
 
-    $signal = [Signal]::new("Convert-JsonToGraph")
+    $signal = [Signal]::Start("Convert-JsonToGraph")
 
     try {
         $parsed = $Json | ConvertFrom-Json -Depth 25
@@ -17,8 +17,8 @@ function Convert-JsonToGraph {
             $graph.GraphSignal = [Signal]::FromJson(($parsed.GraphSignal | ConvertTo-Json -Depth 25))
         }
 
-        foreach ($key in $parsed.SignalGrid.PSObject.Properties.Name) {
-            $entry = $parsed.SignalGrid[$key]
+        foreach ($key in $parsed.Grid.PSObject.Properties.Name) {
+            $entry = $parsed.Grid[$key]
             $signalObj = if ($IgnoreInternalObjects) {
                 $sig = [Signal]::new($key)
                 $sig.SetResult($entry)

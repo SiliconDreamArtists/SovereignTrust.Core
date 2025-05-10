@@ -3,7 +3,7 @@ function Invoke-HydrationCondenser {
         [Parameter(Mandatory)][Graph]$Graph,
         [Parameter(Mandatory)][AllowEmptyCollection()][object[]]$Intent
     )
-    $signal = [Signal]::new("Invoke-HydrationCondenser")
+    $signal = [Signal]::Start("Invoke-HydrationCondenser")
     foreach ($entry in $Intent) {
         if ($null -eq $entry -or -not ($entry -is [hashtable])) {
             $signal.LogWarning("⚠️ Invalid or null hydration entry — skipping.")

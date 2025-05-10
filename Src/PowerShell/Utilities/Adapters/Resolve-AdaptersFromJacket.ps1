@@ -7,7 +7,7 @@ function Resolve-AdapterFromJacket {
         [object]$Jacket
     )
 
-    $signal = [Signal]::new("ResolveAdapter:$($Jacket.Name)")
+    $signal = [Signal]::Start("ResolveAdapter:$($Jacket.Name)")
 
     try {
         # ░▒▓█ RESOLVE VIRTUAL PATH █▓▒░

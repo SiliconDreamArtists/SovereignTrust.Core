@@ -4,7 +4,7 @@ function Wait-ForFileUnlock {
         [int]$TimeoutSeconds = 10
     )
 
-    $signal = [Signal]::new("Wait-ForFileUnlock")
+    $signal = [Signal]::Start("Wait-ForFileUnlock")
 
     if (-not (Test-Path $FilePath)) {
         $signal.LogCritical("❌ File not found: $FilePath")

@@ -21,10 +21,10 @@ class MappedNetworkAdapter {
     }
 
     [Signal] SendAsync([string]$channel, [string]$message, $messageDynamic) {
-        $signal = [Signal]::new("SendAsync")
+        $signal = [Signal]::Start("SendAsync")
 
-        foreach ($key in $this.ServiceCollection.SignalGrid.Keys) {
-            $serviceSignal = $this.ServiceCollection.SignalGrid[$key]
+        foreach ($key in $this.ServiceCollection.Grid.Keys) {
+            $serviceSignal = $this.ServiceCollection.Grid[$key]
             $service = $serviceSignal.GetResult()
 
             if ($service -and ($service | Get-Member -Name "SendAsync")) {
@@ -46,10 +46,10 @@ class MappedNetworkAdapter {
     }
 
     [Signal] CompleteMessageAsync([object]$message) {
-        $signal = [Signal]::new("CompleteMessageAsync")
+        $signal = [Signal]::Start("CompleteMessageAsync")
 
-        foreach ($key in $this.ServiceCollection.SignalGrid.Keys) {
-            $serviceSignal = $this.ServiceCollection.SignalGrid[$key]
+        foreach ($key in $this.ServiceCollection.Grid.Keys) {
+            $serviceSignal = $this.ServiceCollection.Grid[$key]
             $service = $serviceSignal.GetResult()
 
             if ($service -and ($service | Get-Member -Name "CompleteMessageAsync")) {
@@ -71,8 +71,8 @@ class MappedNetworkAdapter {
     }
 
     [void] StartListening([bool]$autoComplete) {
-        foreach ($key in $this.ServiceCollection.SignalGrid.Keys) {
-            $serviceSignal = $this.ServiceCollection.SignalGrid[$key]
+        foreach ($key in $this.ServiceCollection.Grid.Keys) {
+            $serviceSignal = $this.ServiceCollection.Grid[$key]
             $service = $serviceSignal.GetResult()
 
             if ($service -and ($service | Get-Member -Name "StartListening")) {

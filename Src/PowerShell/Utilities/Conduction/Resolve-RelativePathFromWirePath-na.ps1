@@ -4,7 +4,7 @@ function Resolve-RelativePathFromWirePath {
         [Parameter(Mandatory)] [string]$Type
     )
 
-    $signal = [Signal]::new("ResolveRelativePath:$VirtualPath")
+    $signal = [Signal]::Start("ResolveRelativePath:$VirtualPath")
 
     switch ($Type) {
         "Module" {

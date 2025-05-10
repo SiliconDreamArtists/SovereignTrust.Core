@@ -14,7 +14,7 @@ function Test-IsClassDefined {
         [string]$ClassName
     )
 
-    $signal = [Signal]::new("Test-IsClassDefined:$ClassName")
+    $signal = [Signal]::Start("Test-IsClassDefined:$ClassName")
 
     try {
         # ░▒▓█ TYPE DIRECT QUERY █▓▒░

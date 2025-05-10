@@ -56,10 +56,10 @@ class MappedStorageAdapter {
     }
 
     [Signal] ReadObjectAsJson([string]$folder, [string]$fileName) {
-        $signal = [Signal]::new("ReadObjectAsJson")
+        $signal = [Signal]::Start("ReadObjectAsJson")
 
-        foreach ($key in $this.ServiceCollection.SignalGrid.Keys) {
-            $serviceSignal = $this.ServiceCollection.SignalGrid[$key]
+        foreach ($key in $this.ServiceCollection.Grid.Keys) {
+            $serviceSignal = $this.ServiceCollection.Grid[$key]
             $service = $serviceSignal.GetResult()
 
             if ($service -and ($service | Get-Member -Name "ReadObjectAsJson")) {
@@ -81,10 +81,10 @@ class MappedStorageAdapter {
     }
 
     [Signal] ReadObjectAsXml([string]$folder, [string]$fileName) {
-        $signal = [Signal]::new("ReadObjectAsXml")
+        $signal = [Signal]::Start("ReadObjectAsXml")
 
-        foreach ($key in $this.ServiceCollection.SignalGrid.Keys) {
-            $serviceSignal = $this.ServiceCollection.SignalGrid[$key]
+        foreach ($key in $this.ServiceCollection.Grid.Keys) {
+            $serviceSignal = $this.ServiceCollection.Grid[$key]
             $service = $serviceSignal.GetResult()
 
             if ($service -and ($service | Get-Member -Name "ReadObjectAsXml")) {
@@ -106,10 +106,10 @@ class MappedStorageAdapter {
     }
 
     [Signal] DeleteFile([string]$folder, [string]$fileName) {
-        $signal = [Signal]::new("DeleteFile")
+        $signal = [Signal]::Start("DeleteFile")
 
-        foreach ($key in $this.ServiceCollection.SignalGrid.Keys) {
-            $serviceSignal = $this.ServiceCollection.SignalGrid[$key]
+        foreach ($key in $this.ServiceCollection.Grid.Keys) {
+            $serviceSignal = $this.ServiceCollection.Grid[$key]
             $service = $serviceSignal.GetResult()
 
             if ($service -and ($service | Get-Member -Name "DeleteFile")) {
@@ -131,10 +131,10 @@ class MappedStorageAdapter {
     }
 
     [Signal] ListDirectoryObjects([string]$folder) {
-        $signal = [Signal]::new("ListDirectoryObjects")
+        $signal = [Signal]::Start("ListDirectoryObjects")
 
-        foreach ($key in $this.ServiceCollection.SignalGrid.Keys) {
-            $serviceSignal = $this.ServiceCollection.SignalGrid[$key]
+        foreach ($key in $this.ServiceCollection.Grid.Keys) {
+            $serviceSignal = $this.ServiceCollection.Grid[$key]
             $service = $serviceSignal.GetResult()
 
             if ($service -and ($service | Get-Member -Name "ListDirectoryObjects")) {

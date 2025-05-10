@@ -6,7 +6,7 @@ class HydrationCondenser {
     HydrationCondenser([MappedCondenserAdapter]$mappedAdapter, [Conductor]$conductor) {
         $this.MappedCondenserAdapter = $mappedAdapter
         $this.Conductor = $conductor
-        $this.ControlSignal = [Signal]::new("MergeCondenser.Control")
+        $this.ControlSignal = [Signal]::Start("MergeCondenser.Control")
     }
 
     [object] GetMergeCondenserSettings() {
@@ -18,7 +18,7 @@ class HydrationCondenser {
     }
 
     [Signal] GetToken([string]$Value, $CondenserSignal, [bool]$ThrowExceptionOnEmpty = $true, [int]$RetryAttempts = 2) {
-        $signal = [Signal]::new("GetToken:$Value")  
+        $signal = [Signal]::Start("GetToken:$Value")  
     
         if ([string]::IsNullOrWhiteSpace($Value)) {
             $signal.LogWarning("Token value was empty or null.")
@@ -61,7 +61,7 @@ class HydrationCondenser {
     }
     
     [Signal] GetContext($TokenDocument, $TokenGraphOverrides, $OverloadGraphVirtualPath = $null) {
-        $signal = [Signal]::new("GetContext")
+        $signal = [Signal]::Start("GetContext")
     
         try {
             # ░▒▓█ SETTINGS RETRIEVAL █▓▒░

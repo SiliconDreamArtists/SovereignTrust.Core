@@ -29,7 +29,7 @@ function Convert-AgentAdaptersToConductor {
         [object]$Conductor
     )
 
-    $signal = [Signal]::new("Convert-AgentAdaptersToConductor")
+    $signal = [Signal]::Start("Convert-AgentAdaptersToConductor")
 
     function Add-AdapterJacket {
         param (

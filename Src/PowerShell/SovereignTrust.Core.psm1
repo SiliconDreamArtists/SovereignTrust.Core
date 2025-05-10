@@ -1,6 +1,4 @@
 # Load all files (functions + classes)
-. "$PSScriptRoot/Classes/Conduction/Graph.ps1"
-
 . "$PSScriptRoot/Classes/Adapters/UX/ConsoleLogger.ps1"
 #. "$PSScriptRoot/Classes/Adapters/Condenser/JsonHelper.ps1"
 
@@ -54,12 +52,12 @@
 . "$PSScriptRoot/Utilities/Tooling/Test-IsClassDefined.ps1"
 
 . "$PSScriptRoot/Utilities/IO/LocalFileSystem/Wait-ForFileUnlock.ps1"
+. "$PSScriptRoot/Utilities/IO/LocalFileSystem/Read-JsonFileAsSignal.ps1"
 . "$PSScriptRoot/Utilities/Json/Get-JsonObjectFromFile.ps1"
 
 . "$PSScriptRoot/Utilities/Conduction/Convert-AgentAdaptersToConductor.ps1"
 . "$PSScriptRoot/Utilities/Conduction/Get-AgentForConductor.ps1"
 . "$PSScriptRoot/Utilities/Conduction/Start-BondingConductor.ps1"
-. "$PSScriptRoot/Utilities/Json/Add-PathToDictionary.ps1"
 . "$PSScriptRoot/Utilities/Json/Convert-JsonToHashtable.ps1"
 . "$PSScriptRoot/Utilities/Json/Get-DictionaryValue.ps1"
 . "$PSScriptRoot/Utilities/Json/Get-VirtualValueFromJson.ps1"
@@ -68,7 +66,6 @@
 . "$PSScriptRoot/Utilities/Json/Resolve-FilteredArrayItem.ps1"
 
 . "$PSScriptRoot/Utilities/Json/Resolve-PathFromDictionaryNoSignal.ps1"
-. "$PSScriptRoot/Utilities/Json/Resolve-PathFromDictionary.ps1"
 . "$PSScriptRoot/Utilities/Json/Resolve-RegexPlaceholders.ps1"
 . "$PSScriptRoot/Utilities/Json/Set-DictionaryValue.ps1"
 
@@ -103,7 +100,7 @@ Export-ModuleMember -Function Invoke-TestGraph
 
 Export-ModuleMember -Function Get-JsonObjectFromFile
 Export-ModuleMember -Function Wait-ForFileUnlock
-
+Export-ModuleMember -Function Read-JsonFileAsSignal
 
 Export-ModuleMember -Function  Resolve-DependencyModuleFromGraph
 Export-ModuleMember -Function  Register-AdapterToMappedSlot

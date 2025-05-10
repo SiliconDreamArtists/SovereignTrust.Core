@@ -6,15 +6,15 @@ class MappedCondenserAdapter {
 
     MappedCondenserAdapter([object]$conductor) {
         $this.Conductor = $conductor
-        $this.ControlSignal = [Signal]::new("MappedCondenserAdapter.Control")
+        $this.ControlSignal = [Signal]::Start("MappedCondenserAdapter.Control")
         $this.AdapterGraph = [Graph]::new($conductor.Environment)
         $this.AdapterGraph.Start() | Out-Null
     }
 
     [Signal] RegisterAdapter([string]$Key, [object]$CondenserAdapter) {
-        $signal = [Signal]::new("RegisterMappedAdapter:$Key")
+        $signal = [Signal]::Start("RegisterMappedAdapter:$Key")
 
-        $adapterSignal = [Signal]::new("Adapter:$Key")
+        $adapterSignal = [Signal]::Start("Adapter:$Key")
         $adapterSignal.SetResult($CondenserAdapter)
 
         $registerSignal = $this.AdapterGraph.RegisterSignal($Key, $adapterSignal)
@@ -31,10 +31,10 @@ class MappedCondenserAdapter {
     }
 
     [Signal] Invoke([object]$Context) {
-        $signal = [Signal]::new("MappedCondenserAdapter.Invoke")
+        $signal = [Signal]::Start("MappedCondenserAdapter.Invoke")
 
-        foreach ($key in $this.AdapterGraph.SignalGrid.Keys) {
-            $subSignal = $this.AdapterGraph.SignalGrid[$key]
+        foreach ($key in $this.AdapterGraph.Grid.Keys) {
+            $subSignal = $this.AdapterGraph.Grid[$key]
             $service = $subSignal.GetResult()
 
             if ($null -ne $service -and ($service | Get-Member -Name "Invoke")) {

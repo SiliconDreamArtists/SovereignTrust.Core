@@ -4,7 +4,7 @@ function Convert-VirtualPathToWirePath {
         [string]$Path = "VirtualPath"
     )
 
-    $signal = [Signal]::new("Convert-VirtualPathToWirePath")
+    $signal = [Signal]::Start("Convert-VirtualPathToWirePath")
 
     try {
         # ░▒▓█ RESOLVE PATH FROM DICTIONARY █▓▒░

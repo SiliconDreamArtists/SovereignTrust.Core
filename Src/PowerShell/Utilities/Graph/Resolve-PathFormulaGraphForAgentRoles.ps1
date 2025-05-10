@@ -4,7 +4,7 @@ function Resolve-PathFormulaGraphForAgentRoles {
         [Parameter(Mandatory)][Signal]$ConductionSignal
     )
 
-    $opSignal = [Signal]::new("Resolve-AgentRolesGraph:$WirePath")
+    $opSignal = [Signal]::Start("Resolve-AgentRolesGraph:$WirePath")
 
     # ░▒▓█ EXTRACT ROOT AGENTS ARRAY █▓▒░
     $agentSetSignal = Resolve-PathFromDictionary -Dictionary $ConductionSignal -Path $WirePath | Select-Object -Last 1
@@ -53,7 +53,7 @@ function Resolve-PathFormulaGraphForAgentRoles {
                 continue
             }
 
-            $roleSignal = [Signal]::new("$agentName.$roleName")
+            $roleSignal = [Signal]::Start("$agentName.$roleName")
             $roleSignal.SetJacket($role)
             $roleGraph.RegisterSignal($roleName, $roleSignal)
 

@@ -7,22 +7,27 @@
 class Conductor {
     [Signal]$Signal  # 🧠 Sovereign memory vessel for this Conductor
 
-    Conductor([Conductor]$hostConductor = $null, $conduction) {
-        $this.Signal = [Signal]::new("Conductor")
-        $this.Signal.SetJacket($conduction)
+    Conductor([Conductor]$hostConductor, $conductionSignal) {
+        $this.Signal = [Signal]::Start("Conductor")
 
-        Add-PathToDictionary -Dictionary $this -Path "#.%.HostConductor"   -Value $hostConductor        | Out-Null
-        Add-PathToDictionary -Dictionary $this -Path "#.%.IsHostConductor" -Value ($null -eq $hostConductor) | Out-Null
+        $jacketSignal = Resolve-PathFromDictionary -Dictionary $conductionSignal -Path "@.%" | Select-Object -Last 1
+        if ($this.Signal.MergeSignalAndVerifyFailure(@($jacketSignal))) { return }
+        
+        $this.Signal.SetJacket($jacketSignal)
 
-        if ($this.Signal.MergeAndVerifyFailure(($this.InitializeMemory()    | Select-Object -Last 1))) { return }
-        if ($this.Signal.MergeAndVerifyFailure(($this.LoadMappedAdapters() | Select-Object -Last 1))) { return }
-        if ($this.Signal.MergeAndVerifyFailure(($this.LoadAgentGraph()     | Select-Object -Last 1))) { return }
+        Add-PathToDictionary -Dictionary $this -Path "$.%.HostConductor"   -Value $hostConductor        | Out-Null
+        Add-PathToDictionary -Dictionary $this -Path "$.%.IsHostConductor" -Value ($null -eq $hostConductor) | Out-Null
+
+        if ($this.Signal.MergeSignalAndVerifyFailure(@($this.InitializeMemory()    | Select-Object -Last 1))) { return }
+        if ($this.Signal.MergeSignalAndVerifyFailure(@($this.LoadMappedAdapters() | Select-Object -Last 1))) { return }
+        if ($this.Signal.MergeSignalAndVerifyFailure(@($this.LoadAgentGraph()     | Select-Object -Last 1))) { return }
     }
+    
 
     [Signal] InitializeMemory() {
-        $opSignal = [Signal]::new("Conductor.InitializeMemory")
+        $opSignal = [Signal]::Start("Conductor.InitializeMemory")
 
-        $envSignal = Resolve-PathFromDictionary -Dictionary $this -Path "#.%.Environment" | Select-Object -Last 1
+        $envSignal = Resolve-PathFromDictionary -Dictionary $this -Path "$.%" | Select-Object -Last 1
         if ($envSignal.Failure()) { return $opSignal.MergeSignal($envSignal) }
 
         $graph = [Graph]::new($envSignal.GetResult())
@@ -32,12 +37,12 @@ class Conductor {
     }
 
     [Signal] LoadMappedAdapters() {
-        $opSignal = [Signal]::new("Conductor.LoadMappedAdapters")
+        $opSignal = [Signal]::Start("Conductor.LoadMappedAdapters")
 
         $mapped = $this.LoadMappedCondenserAdapter() | Select-Object -Last 1
         if ($opSignal.MergeSignalAndVerifyFailure($mapped)) { return $opSignal }
 
-        $graphSignal = Resolve-PathFromDictionary -Dictionary $this -Path "#.*" | Select-Object -Last 1
+        $graphSignal = Resolve-PathFromDictionary -Dictionary $this -Path "$.*" | Select-Object -Last 1
         $graph = $graphSignal.GetResult()
 
         $graph.RegisterResultAsSignal("Mapped.Storage", [MappedStorageAdapter]::new($this)) | Out-Null
@@ -47,17 +52,17 @@ class Conductor {
     }
 
     [Signal] LoadAgentGraph() {
-        $opSignal = [Signal]::new("Conductor.LoadAgentGraph")
+        $opSignal = [Signal]::Start("Conductor.LoadAgentGraph")
 
-        $ctx = [Signal]::new("AgentGraph.Context")
+        $ctx = [Signal]::Start("AgentGraph.Context")
         $ctx.SetResult($this)
         $ctx.SetJacket($this.Signal.GetJacket())
         $ctx.SetPointer($this.Signal.Pointer)
 
-        $agentGraphSignal = Resolve-PathFormulaGraphForAgentRoles -WirePath "#.%.Environment.%.Agents" -ConductionSignal $ctx | Select-Object -Last 1
+        $agentGraphSignal = Resolve-PathFormulaGraphForAgentRoles -WirePath "$.%.Environment.%.Agents" -ConductionSignal $ctx | Select-Object -Last 1
         if ($opSignal.MergeSignalAndVerifyFailure($agentGraphSignal)) { return $opSignal }
 
-        $graphSignal = Resolve-PathFromDictionary -Dictionary $this -Path "#.*" | Select-Object -Last 1
+        $graphSignal = Resolve-PathFromDictionary -Dictionary $this -Path "$.*" | Select-Object -Last 1
         $graph = $graphSignal.GetResult()
         $graph.RegisterSignal("AgentGraph", $agentGraphSignal)
 
@@ -65,22 +70,22 @@ class Conductor {
     }
 
     [Signal] LoadMappedCondenserAdapter() {
-        $opSignal = [Signal]::new("Conductor.LoadMappedCondenserAdapter")
+        $opSignal = [Signal]::Start("Conductor.LoadMappedCondenserAdapter")
 
         $condenserSignal = New-MappedCondenserAdapterFromGraph -Conductor $this | Select-Object -Last 1
         if ($opSignal.MergeSignalAndVerifyFailure($condenserSignal)) { return $opSignal }
 
-        $graphSignal = Resolve-PathFromDictionary -Dictionary $this -Path "#.*" | Select-Object -Last 1
+        $graphSignal = Resolve-PathFromDictionary -Dictionary $this -Path "$.*" | Select-Object -Last 1
         $graph = $graphSignal.GetResult()
-        $graph.RegisterSignal("Mapped.Condenser", $condenserSignal)
+        $graph.RegisterSignal("MappedCondenser", $condenserSignal)
 
         return $opSignal
     }
 
     [Signal] AttachPrimaryConduit([Conduit]$conduit) {
-        $opSignal = [Signal]::new("Conductor.AttachPrimaryConduit")
+        $opSignal = [Signal]::Start("Conductor.AttachPrimaryConduit")
 
-        $graphSignal = Resolve-PathFromDictionary -Dictionary $this -Path "#.*" | Select-Object -Last 1
+        $graphSignal = Resolve-PathFromDictionary -Dictionary $this -Path "$.*" | Select-Object -Last 1
         $graph = $graphSignal.GetResult()
         $graph.RegisterResultAsSignal("PrimaryConduit", $conduit)
 
@@ -89,9 +94,9 @@ class Conductor {
     }
 
     [Signal] AttachSecondaryAgent([object]$agent) {
-        $opSignal = [Signal]::new("Conductor.AttachSecondaryAgent")
+        $opSignal = [Signal]::Start("Conductor.AttachSecondaryAgent")
 
-        $agentsPath = "#.*.SecondaryAgents"
+        $agentsPath = "$.*.SecondaryAgents"
         $listSignal = Resolve-PathFromDictionary -Dictionary $this -Path $agentsPath | Select-Object -Last 1
 
         $agentList = $listSignal.GetResult()

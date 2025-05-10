@@ -10,7 +10,7 @@ function Get-AgentForConductor {
         [string]$RoleName
     )
 
-    $signal = [Signal]::new("Get-AgentForConductor")
+    $signal = [Signal]::Start("Get-AgentForConductor")
 
     try {
         # Resolve the Agent

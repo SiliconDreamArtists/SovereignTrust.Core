@@ -5,7 +5,7 @@ function Resolve-PathFormulaGraphForPublisher {
         [Parameter()][string]$RootPath = "m:/sda/Projects-meta"
     )
 
-    $signal = [Signal]::new("Resolve-PathFormulaGraphForSDAPublisher:$WirePath")
+    $signal = [Signal]::Start("Resolve-PathFormulaGraphForSDAPublisher:$WirePath")
     $graph = [Graph]::new($Environment)
     $graph.Start()
 

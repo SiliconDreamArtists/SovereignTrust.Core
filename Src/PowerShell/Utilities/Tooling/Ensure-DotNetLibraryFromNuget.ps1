@@ -7,7 +7,7 @@ function Ensure-DotNetLibraryFromNuget {
         [string]$TargetFramework = "netstandard2.0"
     )
 
-    $signal = [Signal]::new("Ensure-DotNetLibrary:$LibraryName")
+    $signal = [Signal]::Start("Ensure-DotNetLibrary:$LibraryName")
 
     try {
         $nugetPath = Join-Path $TargetFolder "Tools"

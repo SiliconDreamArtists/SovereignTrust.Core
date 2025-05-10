@@ -6,7 +6,7 @@ function Register-ModuleLoaded {
         [string]$Version
     )
 
-    $signal = [Signal]::new("Register-ModuleLoaded:$ModuleName")
+    $signal = [Signal]::Start("Register-ModuleLoaded:$ModuleName")
 
     # ░▒▓█ MODULE LOADED MEMORY █▓▒░
     $moduleJacket = @{

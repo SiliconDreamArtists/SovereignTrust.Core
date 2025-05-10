@@ -4,7 +4,7 @@ function Evaluate-AgainstDoctrine {
         [Parameter()][string]$SourceName = "UnnamedScript"
     )
 
-    $signal = [Signal]::new("Evaluate-AgainstDoctrine:$SourceName")
+    $signal = [Signal]::Start("Evaluate-AgainstDoctrine:$SourceName")
     $score = 100
     $flags = @()
 
