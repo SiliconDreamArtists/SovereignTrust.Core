@@ -27,7 +27,9 @@ class Conduit {
     [void] ExecutePhase([object]$phase) {
         # Minimal stub — extend when you wire Phase classes
         if (-not $this.IsRunning) { throw "Conduit is not running." }
-        
+
+        $resultSignal = Invoke-Expression $phase
+
         # Example: process a Phase here
         $phaseName = $phase.PhaseName
         $this.Context.PhaseHistory += $phaseName

@@ -5,7 +5,7 @@ function Read-JsonFileAsSignal {
         [string]$Path
     )
 
-    $signal = [Signal]::Start("Read-JsonFileAsSignal")
+    $signal = [Signal]::Start("Read-JsonFileAsSignal") | Select-Object -Last 1
     $signal.LogVerbose("📖 Reading JSON file from: $Path")
 
     if (-not (Test-Path -Path $Path)) {

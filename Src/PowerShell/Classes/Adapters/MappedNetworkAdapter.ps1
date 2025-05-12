@@ -21,7 +21,7 @@ class MappedNetworkAdapter {
     }
 
     [Signal] SendAsync([string]$channel, [string]$message, $messageDynamic) {
-        $signal = [Signal]::Start("SendAsync")
+        $signal = [Signal]::Start("SendAsync") | Select-Object -Last 1
 
         foreach ($key in $this.ServiceCollection.Grid.Keys) {
             $serviceSignal = $this.ServiceCollection.Grid[$key]
@@ -46,7 +46,7 @@ class MappedNetworkAdapter {
     }
 
     [Signal] CompleteMessageAsync([object]$message) {
-        $signal = [Signal]::Start("CompleteMessageAsync")
+        $signal = [Signal]::Start("CompleteMessageAsync") | Select-Object -Last 1
 
         foreach ($key in $this.ServiceCollection.Grid.Keys) {
             $serviceSignal = $this.ServiceCollection.Grid[$key]

@@ -1,37 +1,63 @@
 class MappedCondenserAdapter {
     [object]$Conductor
     [Graph]$AdapterGraph
-    [Signal]$ControlSignal
-    $MyName = "MappedCondenserAdapter"
+    [Signal]$Signal
 
-    MappedCondenserAdapter([object]$conductor) {
-        $this.Conductor = $conductor
-        $this.ControlSignal = [Signal]::Start("MappedCondenserAdapter.Control")
-        $this.AdapterGraph = [Graph]::new($conductor.Environment)
-        $this.AdapterGraph.Start() | Out-Null
+    MappedCondenserAdapter() {
+        # Empty constructor: use static Start() to initialize state
+    }
+
+    static [Signal] Start() {
+        return [Signal]::Start($null)
+    }
+
+    static [Signal] Start([object]$conductor) {
+        $opSignal = [Signal]::Start("MappedCondenserAdapter.Start") | Select-Object -Last 1
+
+        if (-not $conductor) {
+            $opSignal.LogCritical("❌ Null Conductor passed to Start().")
+            return $opSignal
+        }
+
+        try {
+            $adapter = [MappedCondenserAdapter]::new()
+            $adapter.Conductor = $conductor
+            $adapter.Signal = [Signal]::Start("MappedCondenserAdapter") | Select-Object -Last 1
+            $adapterGraphSignal = [Graph]::Start("MappedCondenserAdapter", $adapter, $false)
+            $adapter.AdapterGraph = $adapterGraphSignal.GetResult()
+    
+            $opSignal.SetResult($adapter)
+            $opSignal.LogInformation("✅ MappedCondenserAdapter initialized successfully.")
+        }
+        catch {
+            $opSignal.LogCritical("💥 Exception during adapter construction: $_")
+        }
+
+        return $opSignal
     }
 
     [Signal] RegisterAdapter([string]$Key, [object]$CondenserAdapter) {
-        $signal = [Signal]::Start("RegisterMappedAdapter:$Key")
+        $opSignal = [Signal]::Start("RegisterMappedAdapter:$Key") | Select-Object -Last 1
 
-        $adapterSignal = [Signal]::Start("Adapter:$Key")
+        $adapterSignal = [Signal]::Start("Adapter:$Key") | Select-Object -Last 1
         $adapterSignal.SetResult($CondenserAdapter)
 
         $registerSignal = $this.AdapterGraph.RegisterSignal($Key, $adapterSignal)
-        $signal.MergeSignal($registerSignal)
+        $opSignal.MergeSignal($registerSignal)
 
         if ($registerSignal.Success()) {
-            $signal.LogInformation("✅ Registered Condenser adapter under key: '$Key'")
+            $opSignal.LogInformation("✅ Registered Condenser adapter under key: '$Key'")
         } else {
-            $signal.LogWarning("⚠️ Failed to register adapter at key: '$Key'")
+            $opSignal.LogWarning("⚠️ Failed to register adapter at key: '$Key'")
         }
 
-        $this.ControlSignal.MergeSignal($signal)
-        return $signal
+        $this.Signal.MergeSignal($opSignal)
+
+        return $opSignal
     }
 
     [Signal] Invoke([object]$Context) {
-        $signal = [Signal]::Start("MappedCondenserAdapter.Invoke")
+        $opSignal = [Signal]::Start("MappedCondenserAdapter.Invoke") | Select-Object -Last 1
 
         foreach ($key in $this.AdapterGraph.Grid.Keys) {
             $subSignal = $this.AdapterGraph.Grid[$key]
@@ -39,25 +65,25 @@ class MappedCondenserAdapter {
 
             if ($null -ne $service -and ($service | Get-Member -Name "Invoke")) {
                 $resultSignal = $service.Invoke($Context)
-                $signal.MergeSignal($resultSignal)
+                $opSignal.MergeSignal($resultSignal)
 
                 if ($resultSignal.Success()) {
-                    $signal.SetResult($resultSignal.GetResult())
-                    $signal.LogInformation("🎯 Adapter '$key' invoked successfully.")
+                    $opSignal.SetResult($resultSignal.GetResult())
+                    $opSignal.LogInformation("🎯 Adapter '$key' invoked successfully.")
                     break
                 } else {
-                    $signal.LogWarning("⚠️ Adapter '$key' failed to produce a result.")
+                    $opSignal.LogWarning("⚠️ Adapter '$key' failed to produce a result.")
                 }
             } else {
-                $signal.LogVerbose("⏭️ Adapter '$key' does not support Invoke().")
+                $opSignal.LogVerbose("⏭️ Adapter '$key' does not support Invoke().")
             }
         }
 
-        if (-not $signal.Success()) {
-            $signal.LogCritical("❌ No Condenser adapter produced a valid result.")
+        if (-not $opSignal.Success()) {
+            $opSignal.LogCritical("❌ No Condenser adapter produced a valid result.")
         }
 
-        $this.ControlSignal.MergeSignal($signal)
-        return $signal
+        $this.Signal.MergeSignal($opSignal)
+        return $opSignal
     }
 }

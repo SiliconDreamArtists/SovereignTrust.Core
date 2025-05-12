@@ -5,12 +5,12 @@ function Start-BondingConductor {
         [Signal]$ConductionSignal
     )
 
-    $opSignal = [Signal]::Start("Start-BondingConductor")
+    $opSignal = [Signal]::Start("Start-BondingConductor") | Select-Object -Last 1
 
     try {
         # ░▒▓█ INSTANTIATE CONDUCTOR █▓▒░
         $bondingConductor = [Conductor]::new($null, $ConductionSignal)
-        Add-PathToDictionary -Dictionary $bondingConductor -Path "Signal.%.Status" -Value "Initializing" | Out-Null
+        Add-PathToDictionary -Dictionary $bondingConductor -Path "$.%.Status" -Value "Initializing" | Out-Null
 
         $opSignal.LogInformation("✅ BondingConductor initialized from ConductionSignal.")
 
@@ -30,7 +30,7 @@ function Start-BondingConductor {
         $opSignal.LogInformation("🔌 Conductor adapters converted and resolved.")
 
         # ░▒▓█ RESOLVE CONDUCTION PLAN GRAPH █▓▒░
-        $vpSignal = Resolve-PathFromDictionary -Dictionary $bondingConductor -Path "Signal.%.VirtualPath" | Select-Object -Last 1
+        $vpSignal = Resolve-PathFromDictionary -Dictionary $bondingConductor -Path "$.%.VirtualPath" | Select-Object -Last 1
         if ($opSignal.MergeSignalAndVerifyFailure($vpSignal)) {
             $opSignal.LogCritical("❌ Missing VirtualPath in BondingConductor.")
             return $opSignal

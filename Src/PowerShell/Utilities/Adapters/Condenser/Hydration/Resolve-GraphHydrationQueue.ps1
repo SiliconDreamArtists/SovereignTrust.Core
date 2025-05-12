@@ -2,7 +2,7 @@ function Resolve-GraphHydrationQueue {
     param (
         [Parameter(Mandatory)][Graph]$Graph
     )
-    $signal = [Signal]::Start("Resolve-GraphHydrationQueue")
+    $signal = [Signal]::Start("Resolve-GraphHydrationQueue") | Select-Object -Last 1
     try {
         $queueSignal = Resolve-PathFromDictionary -Dictionary $Graph -Path "HydrationQueue" | Select-Object -Last 1
         if ($queueSignal.Failure()) {

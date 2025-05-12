@@ -14,7 +14,7 @@ function Test-IsClassDefined {
         [string]$ClassName
     )
 
-    $signal = [Signal]::Start("Test-IsClassDefined:$ClassName")
+    $signal = [Signal]::Start("Test-IsClassDefined:$ClassName") | Select-Object -Last 1
 
     try {
         # ░▒▓█ TYPE DIRECT QUERY █▓▒░

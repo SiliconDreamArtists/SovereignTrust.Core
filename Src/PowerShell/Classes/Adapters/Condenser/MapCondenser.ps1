@@ -10,11 +10,11 @@ class MapCondenser {
     MapCondenser([MappedCondenserAdapter]$mappedAdapter, [Conductor]$conductor) {
         $this.MappedCondenserAdapter = $mappedAdapter
         $this.Conductor = $conductor
-        $this.ControlSignal = [Signal]::Start("MergeCondenser.Control")
+        $this.ControlSignal = [Signal]::Start("MergeCondenser.Control") | Select-Object -Last 1
     }
 
     [Signal] CondenseTemplate([object]$Proposal, [object]$Context) {
-        $signal = [Signal]::Start("CondenseTemplate")
+        $signal = [Signal]::Start("CondenseTemplate") | Select-Object -Last 1
 
         if (-not $Proposal -or -not $Proposal.Content) {
             $signal.LogCritical("Invalid or missing Proposal.Content for condensation.")

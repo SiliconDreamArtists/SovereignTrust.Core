@@ -4,6 +4,7 @@ class MappedCondenserAdapter {
     [object]$MapCondenser
     [object]$MergeCondenser
     [object]$GraphCondenser
+    [object]$FormulaGraphCondenser
     [object]$Conductor
 
     MappedCondenserAdapter([object]$Conductor) {
@@ -13,6 +14,7 @@ class MappedCondenserAdapter {
         $this.TokenCondenser = [TokenCondenser]::new($this, $Conductor)
         $this.MapCondenser = [MapCondenser]::new($this, $Conductor)
         $this.GraphCondenser = [GraphCondenser]::new($this)
+        $this.FormulaGraphCondenser = [FormulaGraphCondenser]::new($this)
     }
 
     [object] Invoke([string]$Slot, [object]$Proposal, [object]$CancellationToken = $null) {
@@ -22,11 +24,12 @@ class MappedCondenserAdapter {
             "TokenCondenser" { $this.TokenCondenser }
             "MapCondenser" { $this.MapCondenser }
             "GraphCondenser" { $this.GraphCondenser }
+            "FormulaGraphCondenser" { $this.FormulaGraphCondenser }
             default { $this.GraphCondenser }
         }
 
         if ($condenser -eq $null) {
-            $signal = [Signal]::Start($null)
+            $signal = [Signal]::Start($null) | Select-Object -Last 1
             $signal.LogCritical("No condenser service found for Slot: $Slot")
             return $signal
         }

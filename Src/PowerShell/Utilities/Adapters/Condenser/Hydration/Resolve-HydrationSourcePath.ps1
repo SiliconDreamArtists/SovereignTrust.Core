@@ -5,7 +5,7 @@ function Resolve-HydrationSourcePath {
         [Parameter()][string]$Kind = "Storage",
         [Parameter()][string]$Slot = "PrimaryContent"
     )
-    $signal = [Signal]::Start("Resolve-HydrationSourcePath")
+    $signal = [Signal]::Start("Resolve-HydrationSourcePath") | Select-Object -Last 1
     try {
         $relativePath = $Intent.RelativePath
         if (-not $relativePath) {

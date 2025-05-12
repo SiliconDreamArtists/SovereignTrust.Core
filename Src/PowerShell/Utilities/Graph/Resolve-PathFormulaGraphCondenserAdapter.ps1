@@ -4,10 +4,10 @@ function Resolve-PathFormulaGraphCondenserAdapter {
         [object]$Conductor
     )
 
-    $opSignal = [Signal]::Start("Resolve-PathFormulaGraph:CondenserAdapter")
+    $opSignal = [Signal]::Start("Resolve-PathFormulaGraph:CondenserAdapter") | Select-Object -Last 1
 
     # ░▒▓█ RESOLVE REQUIRED CONTEXT █▓▒░
-    $conductorJacketSignal = Resolve-PathFromDictionary -Dictionary $Conductor -Path "$.%" | Select-Object -Last 1
+    $conductorPointerSignal = Resolve-PathFromDictionary -Dictionary $Conductor -Path "$.*" | Select-Object -Last 1
     $adapterSignal = Resolve-PathFromDictionary -Dictionary $Conductor -Path "$.*.#.MappedCondenser" | Select-Object -Last 1
 
     if ($opSignal.MergeSignalAndVerifyFailure(@($conductorJacketSignal, $adapterSignal))) {
@@ -15,19 +15,20 @@ function Resolve-PathFormulaGraphCondenserAdapter {
         return $opSignal
     }
 
-    $conductorJacket = $conductorJacketSignal.GetResult()
+#    $conductorPointer = $conductorPointerSignal.GetResult()
     $condenser = $adapterSignal.GetResult()
 
     try {
-        $graph = [Graph]::new($conductorJacket)
-        $graph.Start()
+        $graphSignal = [Graph]::Start("MappedCondenserAdapter.Graph", $Conductor, $false)
 
+        $graph = $graphSignal.GetResult()
         # ░▒▓█ REGISTER CONDENSER SERVICES █▓▒░
         $graph.RegisterResultAsSignal("MergeCondenser",     [MergeCondenser]::new($condenser, $Conductor))     | Out-Null
         $graph.RegisterResultAsSignal("MapCondenser",       [MapCondenser]::new($condenser, $Conductor))       | Out-Null
         $graph.RegisterResultAsSignal("TokenCondenser",     [TokenCondenser]::new($condenser, $Conductor))     | Out-Null
         $graph.RegisterResultAsSignal("HydrationCondenser", [HydrationCondenser]::new($condenser, $Conductor)) | Out-Null
         $graph.RegisterResultAsSignal("GraphCondenser",     [GraphCondenser]::new($condenser, $Conductor))     | Out-Null
+        $graph.RegisterResultAsSignal("FormulaGraphCondenser",     [FormulaGraphCondenser]::new($condenser, $Conductor))     | Out-Null
 
         $graph.Finalize()
 

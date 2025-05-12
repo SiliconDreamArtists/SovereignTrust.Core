@@ -5,7 +5,7 @@ function Invoke-GraphCondenser {
         [string]$WirePath = $null
     )
 
-    $signal = [Signal]::Start("Invoke-GraphCondenser")
+    $signal = [Signal]::Start("Invoke-GraphCondenser") | Select-Object -Last 1
 
     # ░▒▓█ RESOLVE TARGET GRAPH REGION █▓▒░
     $GraphTarget = $Graph

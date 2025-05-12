@@ -7,7 +7,7 @@ function Convert-GraphToJson {
         [bool]$IgnoreInternalObjects = $false
     )
 
-    $signal = [Signal]::Start("Convert-GraphToJson")
+    $signal = [Signal]::Start("Convert-GraphToJson") | Select-Object -Last 1
 
     try {
         $exportObject = @{

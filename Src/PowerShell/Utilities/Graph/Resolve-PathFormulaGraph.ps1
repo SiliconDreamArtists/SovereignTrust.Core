@@ -7,7 +7,7 @@ function Resolve-PathFormulaGraph {
     )
 
     # ░▒▓█ SIGNAL INIT █▓▒░
-    $signal = [Signal]::Start("Resolve-PathFormulaGraph:$WirePath")
+    $signal = [Signal]::Start("Resolve-PathFormulaGraph:$WirePath") | Select-Object -Last 1
 
     # ░▒▓█ STRATEGY RESOLVER TABLE █▓▒░
     $strategyTable = @{

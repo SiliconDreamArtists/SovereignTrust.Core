@@ -51,11 +51,11 @@ class MergeCondenser {
     MergeCondenser([MappedCondenserAdapter]$mappedAdapter, [Conductor]$conductor) {
         $this.MappedCondenserAdapter = $mappedAdapter
         $this.Conductor = $conductor
-        $this.ControlSignal = [Signal]::Start("MergeCondenser.Control")
+        $this.ControlSignal = [Signal]::Start("MergeCondenser.Control") | Select-Object -Last 1
     }
 
     [Signal] InvokeByParameter([object]$Base, [object]$Overlay, [bool]$IgnoreInternalObjects = $true) {
-        $signal = [Signal]::Start("MergeCondenser.Invoke-ByParameter")
+        $signal = [Signal]::Start("MergeCondenser.Invoke-ByParameter") | Select-Object -Last 1
 
         $mergeSignal = Merge-CondenserUnifiedMemory -Base $Base -Overlay $Overlay | Select-Object -Last 1
 

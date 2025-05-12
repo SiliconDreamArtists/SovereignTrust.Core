@@ -8,7 +8,7 @@ function Realize-ConductionPhase {
         [Parameter(Mandatory)][object]$ConduitContext
     )
 
-    $signal = [Signal]::Start("Realize-ConductionPhase")
+    $signal = [Signal]::Start("Realize-ConductionPhase") | Select-Object -Last 1
 
     try {
         $resolvedSettings = $HydratedMemory

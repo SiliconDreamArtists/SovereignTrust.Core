@@ -4,7 +4,7 @@ function Resolve-ConductorAdapters {
         [object]$Conductor
     )
 
-    $signal = [Signal]::Start("ResolveConductorAdapters")
+    $signal = [Signal]::Start("ResolveConductorAdapters") | Select-Object -Last 1
 
     try {
         # ░▒▓█ MEMORY PREPARATION █▓▒░

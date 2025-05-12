@@ -7,7 +7,7 @@ function Convert-JsonToGraph {
         [bool]$IgnoreInternalObjects = $false
     )
 
-    $signal = [Signal]::Start("Convert-JsonToGraph")
+    $signal = [Signal]::Start("Convert-JsonToGraph") | Select-Object -Last 1
 
     try {
         $parsed = $Json | ConvertFrom-Json -Depth 25

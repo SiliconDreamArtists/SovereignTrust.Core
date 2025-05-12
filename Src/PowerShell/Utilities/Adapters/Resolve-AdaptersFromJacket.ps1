@@ -7,7 +7,7 @@ function Resolve-AdapterFromJacket {
         [object]$Jacket
     )
 
-    $signal = [Signal]::Start("ResolveAdapter:$($Jacket.Name)")
+    $signal = [Signal]::Start("ResolveAdapter:$($Jacket.Name)") | Select-Object -Last 1
 
     try {
         # ░▒▓█ RESOLVE VIRTUAL PATH █▓▒░

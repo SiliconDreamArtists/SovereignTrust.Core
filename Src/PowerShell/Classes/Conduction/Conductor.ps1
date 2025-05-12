@@ -8,7 +8,7 @@ class Conductor {
     [Signal]$Signal  # 🧠 Sovereign memory vessel for this Conductor
 
     Conductor([Conductor]$hostConductor, $conductionSignal) {
-        $this.Signal = [Signal]::Start("Conductor")
+        $this.Signal = [Signal]::Start("Conductor") | Select-Object -Last 1
 
         $jacketSignal = Resolve-PathFromDictionary -Dictionary $conductionSignal -Path "@.%" | Select-Object -Last 1
         if ($this.Signal.MergeSignalAndVerifyFailure(@($jacketSignal))) { return }
@@ -25,19 +25,19 @@ class Conductor {
     
 
     [Signal] InitializeMemory() {
-        $opSignal = [Signal]::Start("Conductor.InitializeMemory")
+        $opSignal = [Signal]::Start("Conductor.InitializeMemory") | Select-Object -Last 1
 
         $envSignal = Resolve-PathFromDictionary -Dictionary $this -Path "$.%" | Select-Object -Last 1
         if ($envSignal.Failure()) { return $opSignal.MergeSignal($envSignal) }
 
-        $graph = [Graph]::new($envSignal.GetResult())
+        $graph = [Graph]::Start("Conductor:Memory", $envSignal.GetResult(), $true) | Select-Object -Last 1
         $this.Signal.SetPointer($graph)
 
         return $opSignal
     }
 
     [Signal] LoadMappedAdapters() {
-        $opSignal = [Signal]::Start("Conductor.LoadMappedAdapters")
+        $opSignal = [Signal]::Start("Conductor.LoadMappedAdapters") | Select-Object -Last 1
 
         $mapped = $this.LoadMappedCondenserAdapter() | Select-Object -Last 1
         if ($opSignal.MergeSignalAndVerifyFailure($mapped)) { return $opSignal }
@@ -52,9 +52,9 @@ class Conductor {
     }
 
     [Signal] LoadAgentGraph() {
-        $opSignal = [Signal]::Start("Conductor.LoadAgentGraph")
+        $opSignal = [Signal]::Start("Conductor.LoadAgentGraph") | Select-Object -Last 1
 
-        $ctx = [Signal]::Start("AgentGraph.Context")
+        $ctx = [Signal]::Start("AgentGraph.Context") | Select-Object -Last 1
         $ctx.SetResult($this)
         $ctx.SetJacket($this.Signal.GetJacket())
         $ctx.SetPointer($this.Signal.Pointer)
@@ -70,7 +70,7 @@ class Conductor {
     }
 
     [Signal] LoadMappedCondenserAdapter() {
-        $opSignal = [Signal]::Start("Conductor.LoadMappedCondenserAdapter")
+        $opSignal = [Signal]::Start("Conductor.LoadMappedCondenserAdapter") | Select-Object -Last 1
 
         $condenserSignal = New-MappedCondenserAdapterFromGraph -Conductor $this | Select-Object -Last 1
         if ($opSignal.MergeSignalAndVerifyFailure($condenserSignal)) { return $opSignal }
@@ -83,7 +83,7 @@ class Conductor {
     }
 
     [Signal] AttachPrimaryConduit([Conduit]$conduit) {
-        $opSignal = [Signal]::Start("Conductor.AttachPrimaryConduit")
+        $opSignal = [Signal]::Start("Conductor.AttachPrimaryConduit") | Select-Object -Last 1
 
         $graphSignal = Resolve-PathFromDictionary -Dictionary $this -Path "$.*" | Select-Object -Last 1
         $graph = $graphSignal.GetResult()
@@ -94,7 +94,7 @@ class Conductor {
     }
 
     [Signal] AttachSecondaryAgent([object]$agent) {
-        $opSignal = [Signal]::Start("Conductor.AttachSecondaryAgent")
+        $opSignal = [Signal]::Start("Conductor.AttachSecondaryAgent") | Select-Object -Last 1
 
         $agentsPath = "$.*.SecondaryAgents"
         $listSignal = Resolve-PathFromDictionary -Dictionary $this -Path $agentsPath | Select-Object -Last 1

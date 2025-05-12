@@ -56,7 +56,7 @@ class MappedStorageAdapter {
     }
 
     [Signal] ReadObjectAsJson([string]$folder, [string]$fileName) {
-        $signal = [Signal]::Start("ReadObjectAsJson")
+        $signal = [Signal]::Start("ReadObjectAsJson") | Select-Object -Last 1
 
         foreach ($key in $this.ServiceCollection.Grid.Keys) {
             $serviceSignal = $this.ServiceCollection.Grid[$key]
@@ -81,7 +81,7 @@ class MappedStorageAdapter {
     }
 
     [Signal] ReadObjectAsXml([string]$folder, [string]$fileName) {
-        $signal = [Signal]::Start("ReadObjectAsXml")
+        $signal = [Signal]::Start("ReadObjectAsXml") | Select-Object -Last 1
 
         foreach ($key in $this.ServiceCollection.Grid.Keys) {
             $serviceSignal = $this.ServiceCollection.Grid[$key]
@@ -106,7 +106,7 @@ class MappedStorageAdapter {
     }
 
     [Signal] DeleteFile([string]$folder, [string]$fileName) {
-        $signal = [Signal]::Start("DeleteFile")
+        $signal = [Signal]::Start("DeleteFile") | Select-Object -Last 1
 
         foreach ($key in $this.ServiceCollection.Grid.Keys) {
             $serviceSignal = $this.ServiceCollection.Grid[$key]
@@ -131,7 +131,7 @@ class MappedStorageAdapter {
     }
 
     [Signal] ListDirectoryObjects([string]$folder) {
-        $signal = [Signal]::Start("ListDirectoryObjects")
+        $signal = [Signal]::Start("ListDirectoryObjects") | Select-Object -Last 1
 
         foreach ($key in $this.ServiceCollection.Grid.Keys) {
             $serviceSignal = $this.ServiceCollection.Grid[$key]

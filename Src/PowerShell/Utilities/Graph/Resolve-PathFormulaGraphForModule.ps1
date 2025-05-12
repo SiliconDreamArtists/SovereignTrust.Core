@@ -4,7 +4,7 @@ function Resolve-PathFormulaGraphForModule {
         [Parameter()][object]$Environment
     )
 
-    $opSignal = [Signal]::Start("Resolve-PathFormulaGraphForModule:$WirePath")
+    $opSignal = [Signal]::Start("Resolve-PathFormulaGraphForModule:$WirePath") | Select-Object -Last 1
 
     try {
         # ░▒▓█ VERIFY WIREPATH FORMAT █▓▒░
@@ -34,7 +34,7 @@ function Resolve-PathFormulaGraphForModule {
         $graph = [Graph]::new($Environment)
         $graph.Start()
 
-        $nodeSignal = [Signal]::Start("Module:$moduleStem")
+        $nodeSignal = [Signal]::Start("Module:$moduleStem") | Select-Object -Last 1
         $nodeSignal.SetResult([ordered]@{
             Project            = $project
             Collection         = $collection

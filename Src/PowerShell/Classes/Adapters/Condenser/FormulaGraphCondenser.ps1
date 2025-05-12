@@ -19,7 +19,7 @@ class FormulaGraphCondenser {
     }
 
     [Signal] InvokeByParameter([object]$flatArray, [bool]$IgnoreInternalObjects = $true) {
-        $opSignal = [Signal]::Start("FormulaGraphCondenser.Invoke")
+        $opSignal = [Signal]::Start("FormulaGraphCondenser.Invoke") | Select-Object -Last 1
 
         try {
             $graphSignal = [Graph]::Start("GSG:ConductionGraph", $opSignal, $true) | Select-Object -Last 1
@@ -28,8 +28,8 @@ class FormulaGraphCondenser {
 
             foreach ($item in $flatArray) {
                 $id = $item.ID
-                $signal = [Signal]::Start("Node:$id", $opSignal, $null, $item) | Select-Object -Last 1
-                $graph.RegisterSignal($signal.Name, $signal) | Out-Null
+                $_signal = [Signal]::Start("Node:$id", $opSignal, $null, $item) | Select-Object -Last 1
+                $graph.RegisterSignal($_signal.Name, $_signal) | Out-Null
             }
 
             $graph.Finalize()

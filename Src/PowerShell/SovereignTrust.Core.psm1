@@ -32,6 +32,7 @@
 . "$PSScriptRoot/Classes/Adapters/Condenser/MapCondenser.ps1"
 . "$PSScriptRoot/Classes/Adapters/Condenser/HydrationCondenser.ps1"
 . "$PSScriptRoot/Classes/Adapters/Condenser/GraphCondenser.ps1"
+. "$PSScriptRoot/Classes/Adapters/Condenser/FormulaGraphCondenser.ps1"
 . "$PSScriptRoot/Classes/Adapters/Condenser/TokenCondenser.ps1"
 . "$PSScriptRoot/Classes/Adapters/Condenser/MergeCondenser.ps1"
 
@@ -50,6 +51,9 @@
 . "$PSScriptRoot/Utilities/Tooling/Ensure-DotNetLibraryFromNuget.ps1"
 . "$PSScriptRoot/Utilities/Tooling/Invoke-TestGraph.ps1"
 . "$PSScriptRoot/Utilities/Tooling/Test-IsClassDefined.ps1"
+. "$PSScriptRoot/Utilities/Tooling/Invoke-VisualizeSignalTreeTrace.ps1"
+. "$PSScriptRoot/Utilities/Tooling/Invoke-TraceSignalTree.ps1"
+. "$PSScriptRoot/Utilities/Tooling/SovereignTrust.Core.Diagrams.ps1"
 
 . "$PSScriptRoot/Utilities/IO/LocalFileSystem/Wait-ForFileUnlock.ps1"
 . "$PSScriptRoot/Utilities/IO/LocalFileSystem/Read-JsonFileAsSignal.ps1"
@@ -96,7 +100,8 @@ Export-ModuleMember -Function Set-DictionaryValue
 Export-ModuleMember -Function Ensure-DotNetLibraryFromNuget
 Export-ModuleMember -Function Invoke-TestGraph
 #Export-ModuleMember -Function Test-IsClassDefined
-
+Export-ModuleMember -Function Invoke-VisualizeSignalTreeTrace
+Export-ModuleMember -Function Invoke-TraceSignalTree
 
 Export-ModuleMember -Function Get-JsonObjectFromFile
 Export-ModuleMember -Function Wait-ForFileUnlock
