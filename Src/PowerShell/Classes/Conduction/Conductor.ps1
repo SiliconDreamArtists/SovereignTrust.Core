@@ -48,6 +48,8 @@ class Conductor {
         $graph.RegisterResultAsSignal("Mapped.Storage", [MappedStorageAdapter]::new($this)) | Out-Null
         $graph.RegisterResultAsSignal("Mapped.Network", [MappedNetworkAdapter]::new($this)) | Out-Null
 
+        Invoke-TraceSignalTree -Signal $opSignal -VisualizeFinal $true
+
         return $opSignal
     }
 

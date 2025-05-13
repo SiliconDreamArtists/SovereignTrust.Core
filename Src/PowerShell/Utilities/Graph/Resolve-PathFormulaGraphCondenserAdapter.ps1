@@ -1,4 +1,5 @@
 function Resolve-PathFormulaGraphCondenserAdapter {
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory)]
         [object]$Conductor
@@ -7,36 +8,33 @@ function Resolve-PathFormulaGraphCondenserAdapter {
     $opSignal = [Signal]::Start("Resolve-PathFormulaGraph:CondenserAdapter") | Select-Object -Last 1
 
     # ░▒▓█ RESOLVE REQUIRED CONTEXT █▓▒░
-    $conductorPointerSignal = Resolve-PathFromDictionary -Dictionary $Conductor -Path "$.*" | Select-Object -Last 1
+    $pointerSignal = Resolve-PathFromDictionary -Dictionary $Conductor -Path "$.*" | Select-Object -Last 1
     $adapterSignal = Resolve-PathFromDictionary -Dictionary $Conductor -Path "$.*.#.MappedCondenser" | Select-Object -Last 1
 
-    if ($opSignal.MergeSignalAndVerifyFailure(@($conductorJacketSignal, $adapterSignal))) {
-        $opSignal.LogCritical("❌ Unable to resolve Environment or MappedCondenser from Conductor.")
+    if ($opSignal.MergeSignalAndVerifyFailure(@($pointerSignal, $adapterSignal))) {
+        $opSignal.LogCritical("❌ Unable to resolve required context from Conductor.")
         return $opSignal
     }
 
-#    $conductorPointer = $conductorPointerSignal.GetResult()
-    $condenser = $adapterSignal.GetResult()
+    $mappedAdapter = $adapterSignal.GetResult() | Select-Object -Last 1
+    if ($mappedAdapter -is [Signal]) {
+        $mappedAdapter = $mappedAdapter.GetResult() | Select-Object -Last 1
+    }
 
     try {
-        $graphSignal = [Graph]::Start("MappedCondenserAdapter.Graph", $Conductor, $false)
+        # ░▒▓█ BUILD AND POPULATE CONDENSER GRAPH █▓▒░
+        $graphSignal = [Graph]::Start("MappedCondenserAdapter.Graph", $Conductor, $false) | Select-Object -Last 1
+        $graph = $graphSignal.GetResult() | Select-Object -Last 1
 
-        $graph = $graphSignal.GetResult()
-        # ░▒▓█ REGISTER CONDENSER SERVICES █▓▒░
-        $graph.RegisterResultAsSignal("MergeCondenser",     [MergeCondenser]::new($condenser, $Conductor))     | Out-Null
-        $graph.RegisterResultAsSignal("MapCondenser",       [MapCondenser]::new($condenser, $Conductor))       | Out-Null
-        $graph.RegisterResultAsSignal("TokenCondenser",     [TokenCondenser]::new($condenser, $Conductor))     | Out-Null
-        $graph.RegisterResultAsSignal("HydrationCondenser", [HydrationCondenser]::new($condenser, $Conductor)) | Out-Null
-        $graph.RegisterResultAsSignal("GraphCondenser",     [GraphCondenser]::new($condenser, $Conductor))     | Out-Null
-        $graph.RegisterResultAsSignal("FormulaGraphCondenser",     [FormulaGraphCondenser]::new($condenser, $Conductor))     | Out-Null
+        $graph.RegisterResultAsSignal("MergeCondenser",     [MergeCondenser]::new($mappedAdapter, $Conductor))     | Out-Null
+        $graph.RegisterResultAsSignal("MapCondenser",       [MapCondenser]::new($mappedAdapter, $Conductor))       | Out-Null
+        $graph.RegisterResultAsSignal("TokenCondenser",     [TokenCondenser]::new($mappedAdapter, $Conductor))     | Out-Null
+        $graph.RegisterResultAsSignal("HydrationCondenser", [HydrationCondenser]::new($mappedAdapter, $Conductor)) | Out-Null
+        $graph.RegisterResultAsSignal("GraphCondenser",     [GraphCondenser]::new($mappedAdapter, $Conductor))     | Out-Null
+        $graph.RegisterResultAsSignal("FormulaGraphCondenser", [FormulaGraphCondenser]::new($mappedAdapter, $Conductor)) | Out-Null
 
         $graph.Finalize()
-
-        $opSignal.SetResult(@{
-            Strategy = "Condenser"
-            Graph    = $graph
-        })
-
+        $opSignal.SetResult($graph)
         $opSignal.LogInformation("✅ Condenser formula graph created and populated with condenser adapters.")
     }
     catch {

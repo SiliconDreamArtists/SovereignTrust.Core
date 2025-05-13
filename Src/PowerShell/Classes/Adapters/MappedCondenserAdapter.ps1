@@ -1,10 +1,8 @@
 class MappedCondenserAdapter {
-    [object]$Conductor
-    [Graph]$AdapterGraph
     [Signal]$Signal
 
     MappedCondenserAdapter() {
-        # Empty constructor: use static Start() to initialize state
+        # Use static Start() to initialize
     }
 
     static [Signal] Start() {
@@ -21,16 +19,18 @@ class MappedCondenserAdapter {
 
         try {
             $adapter = [MappedCondenserAdapter]::new()
-            $adapter.Conductor = $conductor
             $adapter.Signal = [Signal]::Start("MappedCondenserAdapter") | Select-Object -Last 1
-            $adapterGraphSignal = [Graph]::Start("MappedCondenserAdapter", $adapter, $false)
-            $adapter.AdapterGraph = $adapterGraphSignal.GetResult()
-    
+            $adapter.Signal.SetJacket($conductor)
+            $adapter.Signal.SetReversePointer($conductor)
+
+            $graphSignal = [Graph]::Start("MappedCondenserAdapter", $adapter, $false)
+            $adapter.Signal.SetResult($graphSignal, $true)
+
             $opSignal.SetResult($adapter)
             $opSignal.LogInformation("✅ MappedCondenserAdapter initialized successfully.")
         }
         catch {
-            $opSignal.LogCritical("💥 Exception during adapter construction: $_")
+            $opSignal.LogCritical("💥 Exception during adapter setup: $_")
         }
 
         return $opSignal
@@ -38,11 +38,11 @@ class MappedCondenserAdapter {
 
     [Signal] RegisterAdapter([string]$Key, [object]$CondenserAdapter) {
         $opSignal = [Signal]::Start("RegisterMappedAdapter:$Key") | Select-Object -Last 1
-
         $adapterSignal = [Signal]::Start("Adapter:$Key") | Select-Object -Last 1
         $adapterSignal.SetResult($CondenserAdapter)
 
-        $registerSignal = $this.AdapterGraph.RegisterSignal($Key, $adapterSignal)
+        $graph = $this.Signal.GetResult() | Select-Object -Last 1
+        $registerSignal = $graph.RegisterSignal($Key, $adapterSignal)
         $opSignal.MergeSignal($registerSignal)
 
         if ($registerSignal.Success()) {
@@ -52,23 +52,23 @@ class MappedCondenserAdapter {
         }
 
         $this.Signal.MergeSignal($opSignal)
-
         return $opSignal
     }
 
     [Signal] Invoke([object]$Context) {
         $opSignal = [Signal]::Start("MappedCondenserAdapter.Invoke") | Select-Object -Last 1
+        $graph = $this.Signal.GetResult() | Select-Object -Last 1
 
-        foreach ($key in $this.AdapterGraph.Grid.Keys) {
-            $subSignal = $this.AdapterGraph.Grid[$key]
-            $service = $subSignal.GetResult()
+        foreach ($key in $graph.Grid.Keys) {
+            $subSignal = $graph.Grid[$key]
+            $adapter = $subSignal.GetResult() | Select-Object -Last 1
 
-            if ($null -ne $service -and ($service | Get-Member -Name "Invoke")) {
-                $resultSignal = $service.Invoke($Context)
+            if ($null -ne $adapter -and ($adapter | Get-Member -Name "Invoke")) {
+                $resultSignal = $adapter.Invoke($Context)
                 $opSignal.MergeSignal($resultSignal)
 
                 if ($resultSignal.Success()) {
-                    $opSignal.SetResult($resultSignal.GetResult())
+                    $opSignal.SetResult($resultSignal, $true)
                     $opSignal.LogInformation("🎯 Adapter '$key' invoked successfully.")
                     break
                 } else {

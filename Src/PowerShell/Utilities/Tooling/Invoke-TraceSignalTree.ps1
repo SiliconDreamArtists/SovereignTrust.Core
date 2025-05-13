@@ -1,11 +1,3 @@
-<# This is used totrace a Signal Tree Trace and optionally visualize it.
-It's usually used inside of utilities to perform traces and then use environment 
-variables to determine if it should be visualized or not according to the circumstance.
-
-Example:
-Invoke-TraceSignalTree -Signal $SignalToTrace $VisualizeFinal $environmentVariablesForVisualizing
-#>
-
 function Invoke-TraceSignalTree {
     [CmdletBinding()]
     param (
@@ -16,50 +8,32 @@ function Invoke-TraceSignalTree {
         [bool]$VisualizeFinal = $false
     )
 
-    # ░▒▓█ WRAPPED SIGNAL █▓▒░
-    $opSignal = [Signal]::Start("TraceSignalTree") | Select-Object -Last 1
+    $opSignal = [Signal]::Start("TraceSignalTree", $Signal) | Select-Object -Last 1
     $opSignal.SetJacket($Signal)
 
-    # ░▒▓█ FLAT DIAGRAM COLLECTOR █▓▒░
-    $diagramSignal = [Signal]::Start("SignalTree:Diagram") | Select-Object -Last 1
+    $diagramSignal = [Signal]::Start("SignalTree:Diagram", $Signal) | Select-Object -Last 1
     $diagramSignal.SetJacket($Signal)
 
     if (-not $TraceID) {
         $TraceID = $opSignal.Name
     }
 
-    $labelPrefix = if ($KeyHint) { "[Key: $KeyHint] " } else { "" }
     $branch = if ($Prefix -eq "") { "[Signal]" } else { "├──" }
 
-    # ░▒▓█ BUILD MAIN DIAGRAM BLOCK █▓▒░
     $lines = @()
-
-    #v1
-    # Optional key label if provided
-    if ($KeyHint) {
-        $lines += "$Prefix│   ├── [Key: $KeyHint]"
-        $subPrefix = "$Prefix│   │   "
-    } else {
-        $subPrefix = "$Prefix│   "
-    }
-
-    $lines += "$subPrefix├── .Name = `"$($Signal.Name)`""
-    $lines += "$subPrefix├── .Jacket = " + ($(if ($null -ne $Signal.Jacket) { "`$Jacket" } else { "`$null" }))
-
-    #v2
-    # ░▒▓█ BUILD MAIN DIAGRAM BLOCK █▓▒░
-    $lines = @()
-    $lines += "$Prefix│   ├── .Name = `"$($Signal.Name)`""
+    $lines += "$Prefix│   $branch .Name = `"$($Signal.Name)`"" + ($(if ($KeyHint) { " (key: $KeyHint)" } else { "" }))
     $lines += "$Prefix│   ├── .Jacket = " + ($(if ($null -ne $Signal.Jacket) { "`$Jacket" } else { "`$null" }))
-    
+
     $resultLabel = "`$null"
     if ($Signal.Result -is [Signal]) {
         $resultLabel = "`$Result (Signal)"
     } elseif ($null -ne $Signal.Result) {
         $resolved = Resolve-PathFromDictionary -Dictionary $Signal.Result -Path "Signal" | Select-Object -Last 1
-        if ($resolved.Success() -and $resolved.GetResult() -is [Signal]) {
-            $sourceName = $resolved.Name
-            $resultLabel = "`$Result (Resolved→Signal:$sourceName)"
+        if ($resolved.MergeSignalAndVerifySuccess(@())) {
+            $resolvedResult = $resolved.GetResult()
+            if ($resolvedResult -is [Signal]) {
+                $resultLabel = "`$Result (Resolved→Signal:$($resolved.Name))"
+            }
         } else {
             $resultLabel = "`$Result ($($Signal.Result.GetType().Name))"
         }
@@ -72,10 +46,9 @@ function Invoke-TraceSignalTree {
 
     foreach ($line in $lines) {
         $emit = Emit-SignalTreeLine -Target $diagramSignal -Line $line -TraceID $TraceID -TraceScope "Trace" | Select-Object -Last 1
-        $diagramSignal.MergeSignal(@($emit))
+        if ($diagramSignal.MergeSignalAndVerifyFailure(@($emit))) { return $diagramSignal }
     }
 
-    # ░▒▓█ FLAT RECURSION INTO CHILD SIGNALS █▓▒░
     foreach ($child in @(
         @{ Label = "Result";        Value = $Signal.Result },
         @{ Label = "Pointer";       Value = $Signal.Pointer },
@@ -83,7 +56,7 @@ function Invoke-TraceSignalTree {
     )) {
         if ($child.Value -is [Signal]) {
             $childSignal = Invoke-TraceSignalTree -Signal $child.Value -TraceID $TraceID -Prefix "$Prefix│   " | Select-Object -Last 1
-            $diagramSignal.MergeSignal(@($childSignal))
+            if ($diagramSignal.MergeSignalAndVerifyFailure(@($childSignal))) { return $diagramSignal }
         }
     }
 
@@ -92,26 +65,30 @@ function Invoke-TraceSignalTree {
             $child = $Signal.Grid[$key]
             if ($child -is [Signal]) {
                 $gridSignal = Invoke-TraceSignalTree -Signal $child -TraceID $TraceID -Prefix "$Prefix│   │   " -KeyHint $key | Select-Object -Last 1
-                $diagramSignal.MergeSignal(@($gridSignal))
+                if ($diagramSignal.MergeSignalAndVerifyFailure(@($gridSignal))) { return $diagramSignal }
             }
         }
     }
 
-    if ($Signal.Result -is [MappedCondenserAdapter]) {
-        $adapterGraph = $Signal.Result.AdapterGraph
-        if ($adapterGraph -is [Graph] -and $null -ne $adapterGraph.Grid) {
-            foreach ($key in $adapterGraph.Grid.Keys) {
-                $nested = $adapterGraph.Grid[$key]
-                if ($nested -is [Signal]) {
-                    $nestedSignal = Invoke-TraceSignalTree -Signal $nested -TraceID $TraceID -Prefix "$Prefix│   │   " -KeyHint $key | Select-Object -Last 1
-                    $diagramSignal.MergeSignal(@($nestedSignal))
+    $unwrapped = Resolve-PathFromDictionary -Dictionary $Signal -Path "@.$" | Select-Object -Last 1
+    if ($unwrapped.MergeSignalAndVerifySuccess(@())) {
+        $graphSignal = $unwrapped.GetResult() | Select-Object -Last 1
+        $graphObject = $graphSignal.GetResult()
+        if ($graphObject -is [Graph] -and $null -ne $graphObject.Grid) {
+            foreach ($key in $graphObject.Grid.Keys) {
+                $entry = $graphObject.Grid[$key]
+                if ($entry -is [Signal]) {
+                    $childTrace = Invoke-TraceSignalTree -Signal $entry -TraceID $TraceID -Prefix "$Prefix│   │   " -KeyHint $key | Select-Object -Last 1
+                    if ($diagramSignal.MergeSignalAndVerifyFailure(@($childTrace))) { return $diagramSignal }
                 }
             }
         }
     }
 
     $opSignal.SetResult($diagramSignal)
-    $opSignal.MergeSignal(@($diagramSignal))
+    if ($opSignal.MergeSignalAndVerifyFailure(@($diagramSignal))) {
+        return $opSignal
+    }
 
     if ($VisualizeFinal) {
         Invoke-VisualizeSignalTreeTrace -JacketSignal $opSignal -ResultSignal $diagramSignal | Out-Null

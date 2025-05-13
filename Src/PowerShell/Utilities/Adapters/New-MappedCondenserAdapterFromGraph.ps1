@@ -8,47 +8,51 @@ function New-MappedCondenserAdapterFromGraph {
 
     try {
         # ░▒▓█ INIT EMPTY MAPPED CONDENSER █▓▒░
-        $mappedAdapterSignal = [MappedCondenserAdapter]::Start($Conductor)
-
+        $mappedAdapterSignal = [MappedCondenserAdapter]::Start($Conductor) | Select-Object -Last 1
         if ($opSignal.MergeSignalAndVerifyFailure($mappedAdapterSignal)) {
             $opSignal.LogCritical("❌ Failed to initialize empty MappedCondenserAdapter.")
             return $opSignal
         }
 
-        $mappedAdapter = $mappedAdapterSignal.GetResult()
+        $mappedAdapter = $mappedAdapterSignal.GetResult() | Select-Object -Last 1
+        $adapterGraph   = $mappedAdapter.Signal.GetResult() | Select-Object -Last 1
 
-        # SP 05/11/2025: Apparently this says the Conductor should hold the Mapped Adapters in its own Graph which is the pointer on the Conductor.
-        $graphSignal = Resolve-PathFromDictionary -Dictionary $Conductor -Path "$.*" | Select-Object -Last 1
-        $graph = $graphSignal.GetResult()
-        $registerSignal = $graph.RegisterResultAsSignal("MappedCondenser", $mappedAdapter)
-
-        if ($opSignal.MergeSignalAndVerifyFailure($registerSignal)) {
-            $opSignal.LogCritical("❌ Failed to register empty Condenser adapter.")
+        # ░▒▓█ MOUNT MAPPED CONDENSER ON CONDUCTOR'S GRAPH █▓▒░
+        $conductorGraphSignal = Resolve-PathFromDictionary -Dictionary $Conductor -Path "$.*" | Select-Object -Last 1
+        if ($opSignal.MergeSignalAndVerifyFailure($conductorGraphSignal)) {
+            $opSignal.LogCritical("❌ Could not resolve Conductor pointer graph.")
             return $opSignal
         }
 
-        # ░▒▓█ POPULATE CONDENSERS USING ACCESSIBLE MAPPED STATE █▓▒░
-        $graphSignal = Resolve-PathFormulaGraphCondenserAdapter -Conductor $Conductor | Select-Object -Last 1
+        $conductorGraph = $conductorGraphSignal.GetResult() | Select-Object -Last 1
+        $registerMountSignal = $conductorGraph.RegisterResultAsSignal("MappedCondenser", $mappedAdapter) | Select-Object -Last 1
+        if ($opSignal.MergeSignalAndVerifyFailure($registerMountSignal)) {
+            $opSignal.LogCritical("❌ Failed to register MappedCondenser on Conductor.")
+            return $opSignal
+        }
+
+        # ░▒▓█ RESOLVE CONDENSER POPULATION GRAPH █▓▒░
+        $graphSourceSignal = Resolve-PathFormulaGraphCondenserAdapter -Conductor $Conductor | Select-Object -Last 1
+        if ($opSignal.MergeSignalAndVerifyFailure($graphSourceSignal)) {
+            $opSignal.LogCritical("❌ Failed to resolve Condenser adapter source graph.")
+            return $opSignal
+        }
+
+        $graphSignal = Resolve-PathFromDictionary -Dictionary $graphSourceSignal -Path "@.#" | Select-Object -Last 1
         if ($opSignal.MergeSignalAndVerifyFailure($graphSignal)) {
-            $opSignal.LogCritical("❌ Failed to resolve Condenser graph with full context.")
+            $opSignal.LogCritical("❌ Condenser adapter graph missing from resolved source.")
             return $opSignal
         }
 
-        $graph = Resolve-PathFromDictionary -Dictionary $graphSignal -Path "Graph" | Select-Object -Last 1
-        if ($opSignal.MergeSignalAndVerifyFailure($graph)) {
-            $opSignal.LogCritical("❌ Condenser graph object missing from result.")
-            return $opSignal
-        }
-
-        $graphObject = $graph.GetResult()
+        $graphObject = $graphSignal.GetResult() | Select-Object -Last 1
 
         # ░▒▓█ REGISTER EACH CONDENSER █▓▒░
         foreach ($key in $graphObject.Keys) {
             $adapterSignal = $graphObject[$key]
-            $adapter = $adapterSignal.GetResult()
+            $adapter = $adapterSignal.GetResult() | Select-Object -Last 1
 
             if ($null -ne $adapter) {
-                $registerAdapterSignal = $mappedAdapter.RegisterAdapter($key, $adapter)
+                $registerAdapterSignal = $adapterGraph.RegisterSignal($key, $adapterSignal) | Select-Object -Last 1
                 $opSignal.MergeSignal($registerAdapterSignal)
             } else {
                 $opSignal.LogWarning("⚠️ Null condenser '$key' encountered during registration.")
@@ -63,6 +67,5 @@ function New-MappedCondenserAdapterFromGraph {
     }
 
     Invoke-TraceSignalTree -Signal $opSignal -VisualizeFinal $true
-
     return $opSignal
 }
