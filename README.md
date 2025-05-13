@@ -1,5 +1,5 @@
-# SovereignTrust.Core
-Core protocol helpers, commands, and signal infrastructure powering all SovereignTrust components.
+# SovereignTrust.Foundation
+Sovereign Trust Foundation protocol helpers, commands, and signal infrastructure powering all SovereignTrust components.
 ```plaintext
 ███████╗      ████████╗
 ██╔════╝      ╚══██╔══╝
