@@ -9,6 +9,7 @@ class Conductor {
 
     Conductor([Conductor]$hostConductor, $conductionSignal) {
         $this.Signal = [Signal]::Start("Conductor") | Select-Object -Last 1
+        #$this.Signal.SetResult($this)
 
         $jacketSignal = Resolve-PathFromDictionary -Dictionary $conductionSignal -Path "@.%" | Select-Object -Last 1
         if ($this.Signal.MergeSignalAndVerifyFailure(@($jacketSignal))) { return }
@@ -45,10 +46,10 @@ class Conductor {
         $graphSignal = Resolve-PathFromDictionary -Dictionary $this -Path "$.*" | Select-Object -Last 1
         $graph = $graphSignal.GetResult()
 
-        $graph.RegisterResultAsSignal("Mapped.Storage", [MappedStorageAdapter]::new($this)) | Out-Null
-        $graph.RegisterResultAsSignal("Mapped.Network", [MappedNetworkAdapter]::new($this)) | Out-Null
+        $graph.RegisterResultAsSignal("Mapped.Storage", [MappedStorageAdapter]::Start($this)) | Out-Null
+        $graph.RegisterResultAsSignal("Mapped.Network", [MappedNetworkAdapter]::Start($this)) | Out-Null
 
-        Invoke-TraceSignalTree -Signal $opSignal -VisualizeFinal $true
+        Invoke-TraceSignalTree -Signal $this.Signal -VisualizeFinal $true
 
         return $opSignal
     }

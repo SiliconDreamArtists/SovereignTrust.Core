@@ -27,14 +27,17 @@ function Invoke-TraceSignalTree {
     $resultLabel = "`$null"
     if ($Signal.Result -is [Signal]) {
         $resultLabel = "`$Result (Signal)"
-    } elseif ($null -ne $Signal.Result) {
+    }
+    elseif ($null -ne $Signal.Result) {
         $resolved = Resolve-PathFromDictionary -Dictionary $Signal.Result -Path "Signal" | Select-Object -Last 1
         if ($resolved.MergeSignalAndVerifySuccess(@())) {
             $resolvedResult = $resolved.GetResult()
             if ($resolvedResult -is [Signal]) {
                 $resultLabel = "`$Result (Resolved→Signal:$($resolved.Name))"
             }
-        } else {
+        }
+        else {
+            $diagramSignal.LogRecovery("🩹 Optional Signal resolution from `.Result` failed gracefully.")
             $resultLabel = "`$Result ($($Signal.Result.GetType().Name))"
         }
     }
@@ -50,10 +53,10 @@ function Invoke-TraceSignalTree {
     }
 
     foreach ($child in @(
-        @{ Label = "Result";        Value = $Signal.Result },
-        @{ Label = "Pointer";       Value = $Signal.Pointer },
-        @{ Label = "ReversePointer";Value = $Signal.ReversePointer }
-    )) {
+            @{ Label = "Result"; Value = $Signal.Result },
+            @{ Label = "Pointer"; Value = $Signal.Pointer }#,
+            #@{ Label = "ReversePointer"; Value = $Signal.ReversePointer }
+        )) {
         if ($child.Value -is [Signal]) {
             $childSignal = Invoke-TraceSignalTree -Signal $child.Value -TraceID $TraceID -Prefix "$Prefix│   " | Select-Object -Last 1
             if ($diagramSignal.MergeSignalAndVerifyFailure(@($childSignal))) { return $diagramSignal }
@@ -71,18 +74,49 @@ function Invoke-TraceSignalTree {
     }
 
     $unwrapped = Resolve-PathFromDictionary -Dictionary $Signal -Path "@.$" | Select-Object -Last 1
-    if ($unwrapped.MergeSignalAndVerifySuccess(@())) {
+    if ($opSignal.MergeSignalAndVerifySuccess(@($unwrapped))) {
         $graphSignal = $unwrapped.GetResult() | Select-Object -Last 1
         $graphObject = $graphSignal.GetResult()
-        if ($graphObject -is [Graph] -and $null -ne $graphObject.Grid) {
-            foreach ($key in $graphObject.Grid.Keys) {
-                $entry = $graphObject.Grid[$key]
-                if ($entry -is [Signal]) {
-                    $childTrace = Invoke-TraceSignalTree -Signal $entry -TraceID $TraceID -Prefix "$Prefix│   │   " -KeyHint $key | Select-Object -Last 1
-                    if ($diagramSignal.MergeSignalAndVerifyFailure(@($childTrace))) { return $diagramSignal }
+        if ( $opSignal.MergeSignalAndVerifySuccess(@($graphSignal))) {
+            if ($graphObject -is [Graph] -and $null -ne $graphObject.Grid) {
+                foreach ($key in $graphObject.Grid.Keys) {
+                    $entry = $graphObject.Grid[$key]
+                    if ($entry -is [Signal]) {
+                        $childTrace = Invoke-TraceSignalTree -Signal $entry -TraceID $TraceID -Prefix "$Prefix│   │   " -KeyHint $key | Select-Object -Last 1
+                        if ($diagramSignal.MergeSignalAndVerifyFailure(@($childTrace))) { return $diagramSignal }
+                    }
                 }
             }
         }
+        else {
+            $opSignal.LogRecovery("🩹 `.Result.@.$` resolution failed — no sovereign graph traversal attempted.")
+        }
+    }
+    else {
+        $opSignal.LogRecovery("🩹 `.Result.@.$` resolution failed — no sovereign graph traversal attempted.")
+    }
+
+    $unwrapped = Resolve-PathFromDictionary -Dictionary $Signal -Path "*" | Select-Object -Last 1
+    if ($opSignal.MergeSignalAndVerifySuccess(@($unwrapped))) {
+        $graphSignal = $unwrapped.GetResultSignal() | Select-Object -Last 1
+        if ( $opSignal.MergeSignalAndVerifySuccess(@($graphSignal))) {
+            $graphObject = $graphSignal.GetResult()
+            if ($null -ne $graphObject) {
+                foreach ($key in $graphObject.Keys) {
+                    $entry = $graphObject[$key]
+                    if ($entry -is [Signal]) {
+                        $childTrace = Invoke-TraceSignalTree -Signal $entry -TraceID $TraceID -Prefix "$Prefix│   │   " -KeyHint $key | Select-Object -Last 1
+                        if ($diagramSignal.MergeSignalAndVerifyFailure(@($childTrace))) { return $diagramSignal }
+                    }
+                }
+            }
+        }
+        else {
+            $opSignal.LogRecovery("🩹 `.Result.*` resolution failed — no sovereign graph traversal attempted.")
+        }
+    }
+    else {
+        $opSignal.LogRecovery("🩹 `.Result.*` resolution failed — no sovereign graph traversal attempted.")
     }
 
     $opSignal.SetResult($diagramSignal)

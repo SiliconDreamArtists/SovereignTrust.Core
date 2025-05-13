@@ -66,6 +66,5 @@ function New-MappedCondenserAdapterFromGraph {
         $opSignal.LogCritical("🔥 Exception during MappedCondenserAdapter construction: $($_.Exception.Message)")
     }
 
-    Invoke-TraceSignalTree -Signal $opSignal -VisualizeFinal $true
     return $opSignal
 }

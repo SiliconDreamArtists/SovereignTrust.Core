@@ -14,9 +14,9 @@ function Emit-SignalTreeLine {
     # Only prefix if not already present
     $formatted = if ($Minimal) {
         $trimmed = $Line -replace '^.*?\]\s*', ''
-        "SignalTree: $trimmed"
+        "🛰️  SignalTree: $trimmed"
     } else {
-        "SignalTree: [TraceID=$TraceID Scope=$TraceScope] $Line"
+        "📡 SignalTree: [TraceID=$TraceID Scope=$TraceScope] $Line"
     }
 
     # Downgrade to Verbose if line ends in `$null`
