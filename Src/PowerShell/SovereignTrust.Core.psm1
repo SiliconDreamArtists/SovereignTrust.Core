@@ -1,6 +1,4 @@
 # Load all files (functions + classes)
-. "$PSScriptRoot/Classes/Conduction/Graph.ps1"
-
 . "$PSScriptRoot/Classes/Adapters/UX/ConsoleLogger.ps1"
 #. "$PSScriptRoot/Classes/Adapters/Condenser/JsonHelper.ps1"
 
@@ -34,6 +32,7 @@
 . "$PSScriptRoot/Classes/Adapters/Condenser/MapCondenser.ps1"
 . "$PSScriptRoot/Classes/Adapters/Condenser/HydrationCondenser.ps1"
 . "$PSScriptRoot/Classes/Adapters/Condenser/GraphCondenser.ps1"
+. "$PSScriptRoot/Classes/Adapters/Condenser/FormulaGraphCondenser.ps1"
 . "$PSScriptRoot/Classes/Adapters/Condenser/TokenCondenser.ps1"
 . "$PSScriptRoot/Classes/Adapters/Condenser/MergeCondenser.ps1"
 
@@ -52,14 +51,17 @@
 . "$PSScriptRoot/Utilities/Tooling/Ensure-DotNetLibraryFromNuget.ps1"
 . "$PSScriptRoot/Utilities/Tooling/Invoke-TestGraph.ps1"
 . "$PSScriptRoot/Utilities/Tooling/Test-IsClassDefined.ps1"
+. "$PSScriptRoot/Utilities/Tooling/Invoke-VisualizeSignalTreeTrace.ps1"
+. "$PSScriptRoot/Utilities/Tooling/Invoke-TraceSignalTree.ps1"
+. "$PSScriptRoot/Utilities/Tooling/SovereignTrust.Core.Diagrams.ps1"
 
 . "$PSScriptRoot/Utilities/IO/LocalFileSystem/Wait-ForFileUnlock.ps1"
+. "$PSScriptRoot/Utilities/IO/LocalFileSystem/Read-JsonFileAsSignal.ps1"
 . "$PSScriptRoot/Utilities/Json/Get-JsonObjectFromFile.ps1"
 
 . "$PSScriptRoot/Utilities/Conduction/Convert-AgentAdaptersToConductor.ps1"
 . "$PSScriptRoot/Utilities/Conduction/Get-AgentForConductor.ps1"
 . "$PSScriptRoot/Utilities/Conduction/Start-BondingConductor.ps1"
-. "$PSScriptRoot/Utilities/Json/Add-PathToDictionary.ps1"
 . "$PSScriptRoot/Utilities/Json/Convert-JsonToHashtable.ps1"
 . "$PSScriptRoot/Utilities/Json/Get-DictionaryValue.ps1"
 . "$PSScriptRoot/Utilities/Json/Get-VirtualValueFromJson.ps1"
@@ -68,7 +70,6 @@
 . "$PSScriptRoot/Utilities/Json/Resolve-FilteredArrayItem.ps1"
 
 . "$PSScriptRoot/Utilities/Json/Resolve-PathFromDictionaryNoSignal.ps1"
-. "$PSScriptRoot/Utilities/Json/Resolve-PathFromDictionary.ps1"
 . "$PSScriptRoot/Utilities/Json/Resolve-RegexPlaceholders.ps1"
 . "$PSScriptRoot/Utilities/Json/Set-DictionaryValue.ps1"
 
@@ -99,11 +100,12 @@ Export-ModuleMember -Function Set-DictionaryValue
 Export-ModuleMember -Function Ensure-DotNetLibraryFromNuget
 Export-ModuleMember -Function Invoke-TestGraph
 #Export-ModuleMember -Function Test-IsClassDefined
-
+Export-ModuleMember -Function Invoke-VisualizeSignalTreeTrace
+Export-ModuleMember -Function Invoke-TraceSignalTree
 
 Export-ModuleMember -Function Get-JsonObjectFromFile
 Export-ModuleMember -Function Wait-ForFileUnlock
-
+Export-ModuleMember -Function Read-JsonFileAsSignal
 
 Export-ModuleMember -Function  Resolve-DependencyModuleFromGraph
 Export-ModuleMember -Function  Register-AdapterToMappedSlot

@@ -10,7 +10,7 @@ function Realize-ConductionPhase {
         [Parameter(Mandatory)][hashtable]$PhaseDictionary
     )
 
-    $signal = [Signal]::Start([IConductionPhase])
+    $signal = [Signal]::Start([IConductionPhase]) | Select-Object -Last 1
     try {
         $typeName = $PhaseSettings.PhaseType
         if (-not $TypeDictionary.ContainsKey($typeName)) {
@@ -35,7 +35,7 @@ function Get-NextConductionPhase {
         [Parameter(Mandatory)][hashtable]$PhaseDictionary
     )
 
-    $signal = [Signal]::Start([IConductionPhase])
+    $signal = [Signal]::Start([IConductionPhase]) | Select-Object -Last 1
     $phases = $PhaseDictionary.Values
 
     if (-not $CurrentPhase) {

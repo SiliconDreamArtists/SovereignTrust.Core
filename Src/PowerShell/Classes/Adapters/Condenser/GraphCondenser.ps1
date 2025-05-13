@@ -6,7 +6,7 @@ class GraphCondenser {
     GraphCondenser([MappedCondenserAdapter]$mappedAdapter, [Conductor]$conductor) {
         $this.MappedCondenserAdapter = $mappedAdapter
         $this.Conductor = $conductor
-        $this.ControlSignal = [Signal]::new("GraphCondenser.Control")
+        $this.ControlSignal = [Signal]::Start("GraphCondenser.Control") | Select-Object -Last 1
     }
 
     GraphCondenser([object]$mappedCondenserAdapter) {
@@ -14,7 +14,7 @@ class GraphCondenser {
     }
 
     [Signal] CondenseMini([object]$Proposal, [object]$CancellationToken, [string]$OverrideTemplatePath = $null) {
-        $signal = [Signal]::new("CondenseMini")
+        $signal = [Signal]::Start("CondenseMini") | Select-Object -Last 1
         $signal.Result = [PSCustomObject]@{ Content = "" }
 
         $variableTags = $this.GetVariableTags($Proposal.Content, $Proposal.ReplacementType)

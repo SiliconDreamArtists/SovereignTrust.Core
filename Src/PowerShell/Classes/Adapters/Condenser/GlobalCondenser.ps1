@@ -8,14 +8,14 @@ class GlobalCondenser {
     }
 
     [object] Condense($CondenseProposal, $CancellationToken = $null) {
-        $signal = [Signal]::Start([object]::new())
+        $signal = [Signal]::Start([object]::new()) | Select-Object -Last 1
         $result = $this.LoadItem($CondenseProposal, $signal.Result, $CondenseProposal.Wire, $CondenseProposal.WireMergeType, $CondenseProposal.Reload, $CondenseProposal.LoadLevel, $CondenseProposal.AutoRunConductionLevel)
         $signal.MergeSignal($result)
         return $signal
     }
 
     [object] Invoke($Slot, $Proposal, $CancellationToken = $null) {
-        $signal = [Signal]::Start()
+        $signal = [Signal]::Start() | Select-Object -Last 1
         $result = $this.Condense($Proposal)
         $signal.MergeSignal($result)
         $signal.Result = $result.Result
@@ -23,7 +23,7 @@ class GlobalCondenser {
     }
 
     [object] LoadItemContent($Wire, [bool]$Reload = $false) {
-        $signal = [Signal]::Start()
+        $signal = [Signal]::Start() | Select-Object -Last 1
 
         if ([string]::IsNullOrWhiteSpace($Wire.VirtualPath)) {
             $signal.LogCritical("Wire has empty VirtualPath: $($Wire.Identifier)")
@@ -73,7 +73,7 @@ class GlobalCondenser {
     }
 
     [object] LoadItemLeadContent($Proposal, $Feedback, $Wire, [bool]$Reload = $false) {
-        $signal = [Signal]::Start()
+        $signal = [Signal]::Start() | Select-Object -Last 1
 
         if ($Wire.LeadWireIdentifier) {
             $signal.Result = ($Proposal.GetWires() | Where-Dictionary { $_.Identifier -eq $Wire.LeadWireIdentifier -and $_.CatalogService -eq $Wire.CatalogService })[0]
@@ -92,7 +92,7 @@ class GlobalCondenser {
     }
 
     [object] LoadItemJacketContent($Proposal, $Feedback, $Wire, [bool]$Reload = $false) {
-        $signal = [Signal]::Start()
+        $signal = [Signal]::Start() | Select-Object -Last 1
 
         if ($Wire.MergeJacket -and $Wire.JacketIdentifier) {
             $signal.Result = ($Proposal.GetWires() | Where-Dictionary { $_.Identifier -eq $Wire.JacketIdentifier -and $_.CatalogService -eq $Wire.CatalogService })[0]
@@ -111,7 +111,7 @@ class GlobalCondenser {
     }
 
     [object] LoadItemGroundContent($Proposal, $Feedback, $Wire, [bool]$Reload = $false) {
-        $signal = [Signal]::Start()
+        $signal = [Signal]::Start() | Select-Object -Last 1
 
         if ($Wire.GroundWireIdentifier) {
             $signal.Result = ($Proposal.GetWires() | Where-Dictionary { ($_.Version -eq $Wire.GroundWireIdentifier -or $_.Identifier -eq $Wire.GroundWireIdentifier) -and $_.CatalogService -eq $Wire.CatalogService })[0]
@@ -130,7 +130,7 @@ class GlobalCondenser {
     }
 
     [object] LoadItemCrossContent($Proposal, $Feedback, $Wire, [bool]$Reload = $false) {
-        $signal = [Signal]::Start()
+        $signal = [Signal]::Start() | Select-Object -Last 1
 
         if ($Wire.CrossWireIdentifier) {
             $signal.Result = ($Proposal.GetWires() | Where-Dictionary { $_.Identifier -eq $Wire.CrossWireIdentifier })[0]
@@ -144,7 +144,7 @@ class GlobalCondenser {
     }
 
     [object] CondenseWires($Proposal, $Feedback, $LeadWire, $CircuitWire, [bool]$Force, [bool]$MergeOnly, $Token = $null, $LeadNestPath = $null) {
-        $signal = [Signal]::Start()
+        $signal = [Signal]::Start() | Select-Object -Last 1
 
         $mergeProposal = [PSCustomObject]@{
             LeadWire       = $LeadWire.ContentDynamic
@@ -164,7 +164,7 @@ class GlobalCondenser {
     }
 
     [object] LoadItem($Proposal, $Feedback, $Wire, $WireMergeType = "Unspecified", [bool]$Reload = $false, [int]$LoadLevel = 0, [int]$AutoRunConductionLevel = -1) {
-        $signal = [Signal]::Start($Feedback)
+        $signal = [Signal]::Start($Feedback) | Select-Object -Last 1
 
         if ($Reload) {
             $loadResult = $this.LoadItemContent($Wire, $Reload)

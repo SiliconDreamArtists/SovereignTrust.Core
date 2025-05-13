@@ -1,3 +1,89 @@
+class MappedStorageAdapter {
+    [Signal]$Signal
+
+    MappedStorageAdapter() {
+        # Use static Start() instead
+    }
+
+    static [Signal] Start([object]$Conductor) {
+        $opSignal = [Signal]::Start("MappedStorageAdapter.Start") | Select-Object -Last 1
+
+        if (-not $Conductor) {
+            $opSignal.LogCritical("❌ Null Conductor passed to MappedStorageAdapter.Start()")
+            return $opSignal
+        }
+
+        try {
+            $adapter = [MappedStorageAdapter]::new()
+            $adapter.Signal = [Signal]::Start("MappedStorageAdapter") | Select-Object -Last 1
+            $adapter.Signal.SetJacket($Conductor)
+            $adapter.Signal.SetReversePointer($Conductor)
+
+            $graphSignal = [Graph]::Start("MappedStorageAdapter", $adapter, $false)
+            $adapter.Signal.SetResult($graphSignal.GetResult())
+
+            $opSignal.SetResult($adapter)
+            $opSignal.LogInformation("✅ MappedStorageAdapter initialized.")
+        }
+        catch {
+            $opSignal.LogCritical("💥 Exception in MappedStorageAdapter.Start(): $_")
+        }
+
+        return $opSignal
+    }
+
+    [Signal] RegisterAdapter([object]$AdapterInstance, [string]$Key = "StorageService") {
+        $opSignal = [Signal]::Start("RegisterMappedAdapter:$Key") | Select-Object -Last 1
+        $adapterSignal = [Signal]::Start("Adapter:$Key") | Select-Object -Last 1
+        $adapterSignal.SetResult($AdapterInstance)
+
+        $graph = $this.Signal.GetResult()
+        $registerSignal = $graph.RegisterSignal($Key, $adapterSignal)
+        $opSignal.MergeSignal($registerSignal)
+
+        if ($registerSignal.Success()) {
+            $opSignal.LogInformation("✅ Registered adapter at key: '$Key'")
+        } else {
+            $opSignal.LogWarning("⚠️ Failed to register adapter at key: '$Key'")
+        }
+
+        $this.Signal.MergeSignal($opSignal)
+        return $opSignal
+    }
+
+    [Signal] InvokeAdapterMethod([string]$MethodName, [object[]]$Args) {
+        $opSignal = [Signal]::Start("MappedStorageAdapter.Invoke:$MethodName") | Select-Object -Last 1
+        $graph = $this.Signal.GetResult()
+
+        foreach ($key in $graph.Grid.Keys) {
+            $adapterSignal = $graph.Grid[$key]
+            $adapter = $adapterSignal.GetResult()
+
+            if ($null -ne $adapter -and ($adapter | Get-Member -Name $MethodName)) {
+                $result = $adapter.InvokeMethod($MethodName, $Args)
+                $opSignal.MergeSignal($result)
+
+                if ($result.Success()) {
+                    $opSignal.SetResult($result.GetResult())
+                    $opSignal.LogInformation("🎯 Adapter '$key' successfully invoked '$MethodName'")
+                    break
+                } else {
+                    $opSignal.LogWarning("⚠️ Adapter '$key' failed on method '$MethodName'")
+                }
+            } else {
+                $opSignal.LogVerbose("⏭️ Adapter '$key' does not implement '$MethodName'")
+            }
+        }
+
+        if (-not $opSignal.Success()) {
+            $opSignal.LogCritical("❌ No adapter succeeded for method '$MethodName'")
+        }
+
+        $this.Signal.MergeSignal($opSignal)
+        return $opSignal
+    }
+}
+
 <#
 ================================================================================
 📦 MappedStorageAdapter • AI Trainer Block (Doctrine v1.0)
@@ -33,125 +119,3 @@ templates, modules, and data — using only memory and WirePath.
 > “When memory becomes sovereign, storage becomes signal.”
 
 #>
-class MappedStorageAdapter {
-    [object]$Conductor
-    [object]$Environment
-    [Graph]$ServiceCollection
-    $MyName = "MappedStorageAdapter"
-
-    MappedStorageAdapter([object]$conductor) {
-        $this.Conductor = $conductor
-
-        $envSignal = Resolve-PathFromDictionary -Dictionary $conductor -Path "Environment" | Select-Object -Last 1
-        if ($envSignal.Failure()) {
-            throw "❌ Unable to resolve Environment from Conductor."
-        }
-
-        $this.Environment = $envSignal.GetResult()
-        $this.ServiceCollection = [Graph]::new($this.Environment)
-    }
-
-    [Signal] RegisterAdapter([object]$service) {
-        return Register-MappedAdapter -ServiceCollection $this.ServiceCollection -Adapter $service -Label "StorageService" | Select-Object -Last 1
-    }
-
-    [Signal] ReadObjectAsJson([string]$folder, [string]$fileName) {
-        $signal = [Signal]::new("ReadObjectAsJson")
-
-        foreach ($key in $this.ServiceCollection.SignalGrid.Keys) {
-            $serviceSignal = $this.ServiceCollection.SignalGrid[$key]
-            $service = $serviceSignal.GetResult()
-
-            if ($service -and ($service | Get-Member -Name "ReadObjectAsJson")) {
-                $result = $service.ReadObjectAsJson($folder, $fileName)
-                $signal.MergeSignal(@($result))
-
-                if ($result.Success()) {
-                    $signal.SetResult($result.GetResult())
-                    break
-                }
-            }
-        }
-
-        if (-not $signal.Success()) {
-            $signal.LogCritical("All storage services failed to read JSON object.")
-        }
-
-        return $signal
-    }
-
-    [Signal] ReadObjectAsXml([string]$folder, [string]$fileName) {
-        $signal = [Signal]::new("ReadObjectAsXml")
-
-        foreach ($key in $this.ServiceCollection.SignalGrid.Keys) {
-            $serviceSignal = $this.ServiceCollection.SignalGrid[$key]
-            $service = $serviceSignal.GetResult()
-
-            if ($service -and ($service | Get-Member -Name "ReadObjectAsXml")) {
-                $result = $service.ReadObjectAsXml($folder, $fileName)
-                $signal.MergeSignal(@($result))
-
-                if ($result.Success()) {
-                    $signal.SetResult($result.GetResult())
-                    break
-                }
-            }
-        }
-
-        if (-not $signal.Success()) {
-            $signal.LogCritical("All storage services failed to read XML object.")
-        }
-
-        return $signal
-    }
-
-    [Signal] DeleteFile([string]$folder, [string]$fileName) {
-        $signal = [Signal]::new("DeleteFile")
-
-        foreach ($key in $this.ServiceCollection.SignalGrid.Keys) {
-            $serviceSignal = $this.ServiceCollection.SignalGrid[$key]
-            $service = $serviceSignal.GetResult()
-
-            if ($service -and ($service | Get-Member -Name "DeleteFile")) {
-                $result = $service.DeleteFile($folder, $fileName)
-                $signal.MergeSignal(@($result))
-
-                if ($result.Success()) {
-                    $signal.SetResult($result.GetResult())
-                    break
-                }
-            }
-        }
-
-        if (-not $signal.Success()) {
-            $signal.LogCritical("All storage services failed to delete file.")
-        }
-
-        return $signal
-    }
-
-    [Signal] ListDirectoryObjects([string]$folder) {
-        $signal = [Signal]::new("ListDirectoryObjects")
-
-        foreach ($key in $this.ServiceCollection.SignalGrid.Keys) {
-            $serviceSignal = $this.ServiceCollection.SignalGrid[$key]
-            $service = $serviceSignal.GetResult()
-
-            if ($service -and ($service | Get-Member -Name "ListDirectoryObjects")) {
-                $result = $service.ListDirectoryObjects($folder)
-                $signal.MergeSignal(@($result))
-
-                if ($result.Success()) {
-                    $signal.SetResult($result.GetResult())
-                    break
-                }
-            }
-        }
-
-        if (-not $signal.Success()) {
-            $signal.LogCritical("All storage services failed to list directory objects.")
-        }
-
-        return $signal
-    }
-}

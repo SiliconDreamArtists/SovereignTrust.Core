@@ -5,7 +5,7 @@ function Register-MappedAdapter {
         [string]$Label = "Adapter"
     )
 
-    $signal = [Signal]::new("Register-$Label")
+    $signal = [Signal]::Start("Register-$Label") | Select-Object -Last 1
 
     try {
         if ($null -eq $Adapter) {
@@ -27,7 +27,7 @@ function Register-MappedAdapter {
         }
         
         # ░▒▓█ ADD SIGNALIZED ATTACHMENT TO GRAPH █▓▒░
-        $wrappedSignal = [Signal]::new("Adapter:$slot")
+        $wrappedSignal = [Signal]::Start("Adapter:$slot") | Select-Object -Last 1
         $wrappedSignal.SetResult($Adapter)
         
         $addSignal = $ServiceCollection.RegisterSignal($slot, $wrappedSignal) | Select-Object -Last 1

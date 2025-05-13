@@ -5,7 +5,7 @@ function Invoke-GraphCondenser {
         [string]$WirePath = $null
     )
 
-    $signal = [Signal]::new("Invoke-GraphCondenser")
+    $signal = [Signal]::Start("Invoke-GraphCondenser") | Select-Object -Last 1
 
     # ░▒▓█ RESOLVE TARGET GRAPH REGION █▓▒░
     $GraphTarget = $Graph
@@ -25,7 +25,7 @@ function Invoke-GraphCondenser {
     }
 
     # ░▒▓█ TRAVERSE SIGNAL GRID █▓▒░
-    foreach ($entry in $GraphTarget.SignalGrid.GetEnumerator()) {
+    foreach ($entry in $GraphTarget.Grid.GetEnumerator()) {
         $name = $entry.Key
         $nodeSignal = $entry.Value
 

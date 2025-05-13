@@ -1,7 +1,7 @@
 # 📡 Signal Control Doctrine
 
 ## 📖 Title
-**Signal Control Doctrine**
+**Signal Control Doctrine v1.1**
 
 ## 🌟 Purpose
 Canonical rules for signal creation, merging, recursion, and lineage safety. This doctrine ensures all operations are traceable, recursive, and sovereign.
@@ -14,6 +14,7 @@ Canonical rules for signal creation, merging, recursion, and lineage safety. Thi
 - Signals contain:
   - `.Result` → output object or memory
   - `.Pointer` → external reference or object
+  - `.ReversePointer` → origin reference to upstream generator
   - `.Entries[]` → merged logs and recursion trail
 
 ---
@@ -55,6 +56,14 @@ Canonical rules for signal creation, merging, recursion, and lineage safety. Thi
 
 ---
 
+## VII. ReversePointer Is Optional But Informative
+
+- If used, `.ReversePointer` links a signal back to its invoker.
+- It must never be required for forward operation.
+- Useful for tracebacks, audit paths, and sovereign journaling.
+
+---
+
 ## 🧠 Summary
 
-Sovereign memory depends on signal-based flow. No signal = no memory = no operation.
+Sovereign memory depends on signal-based flow. No signal = no memory = no operation. Always wrap behavior and data into signals, preserve lineage, and handle control transitions through merge logic.

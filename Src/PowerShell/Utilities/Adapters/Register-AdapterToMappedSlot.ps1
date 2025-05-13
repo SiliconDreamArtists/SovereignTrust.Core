@@ -7,7 +7,7 @@ function Register-AdapterToMappedSlot {
         [object]$Adapter
     )
 
-    $signal = [Signal]::new("Register-AdapterToMappedSlot")
+    $signal = [Signal]::Start("Register-AdapterToMappedSlot") | Select-Object -Last 1
 
     try {
         # ░▒▓█ UNWRAP SIGNAL IF NECESSARY █▓▒░

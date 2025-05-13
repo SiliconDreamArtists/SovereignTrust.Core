@@ -10,7 +10,7 @@ class Storage_EmbeddedFileSystem {
     }
 
     [Signal] Construct([object]$dictionary) {
-        $signal = [Signal]::new("Construct-EmbeddedFileSystem")
+        $signal = [Signal]::Start("Construct-EmbeddedFileSystem") | Select-Object -Last 1
 
         try {
             if ($null -eq $dictionary) {
@@ -28,7 +28,7 @@ class Storage_EmbeddedFileSystem {
     }
 
     [Signal] ReadObjectAsJson([string]$virtualPath) {
-        $signal = [Signal]::new("EmbeddedFileSystem.ReadObjectAsJson")
+        $signal = [Signal]::Start("EmbeddedFileSystem.ReadObjectAsJson") | Select-Object -Last 1
 
         try {
             $pathWithExtension = "$virtualPath.json"

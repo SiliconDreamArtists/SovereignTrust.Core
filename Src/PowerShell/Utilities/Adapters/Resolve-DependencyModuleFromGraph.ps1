@@ -7,7 +7,7 @@ function Resolve-DependencyModuleFromGraph {
         [string]$WirePath
     )
 
-    $signal = [Signal]::new("Resolve-DependencyModuleFromGraph:$WirePath")
+    $signal = [Signal]::Start("Resolve-DependencyModuleFromGraph:$WirePath") | Select-Object -Last 1
 
     # ░▒▓█ RESOLVE PATH FORMULA GRAPH FOR MODULE █▓▒░
     $pathFormulaSignal = Resolve-PathFormulaGraph -WirePath $WirePath -StrategyType "Module" -Environment $ConductionContext.Environment | Select-Object -Last 1

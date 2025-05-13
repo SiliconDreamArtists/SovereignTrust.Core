@@ -12,7 +12,7 @@ Defines memory structuring using graphs, node registration, pointer and result l
 
 - All contextual and dynamic memory in SovereignTrust is stored in `Graph` objects.
 - A `Graph` holds:
-  - `SignalGrid` → node name to signal map
+  - `Grid` → node name to signal map
   - `GraphSignal` → top-level summary signal
   - `Environment` → runtime environment
 

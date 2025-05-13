@@ -7,7 +7,7 @@ function Resolve-PathFormulaGraph {
     )
 
     # ░▒▓█ SIGNAL INIT █▓▒░
-    $signal = [Signal]::new("Resolve-PathFormulaGraph:$WirePath")
+    $signal = [Signal]::Start("Resolve-PathFormulaGraph:$WirePath") | Select-Object -Last 1
 
     # ░▒▓█ STRATEGY RESOLVER TABLE █▓▒░
     $strategyTable = @{
@@ -65,7 +65,7 @@ that maps to resolvable memory segments.
 🧱 Output:
 Returns a living `Graph` object preloaded with:
     • `Manifest` – the formal declaration from the module's psd1 or metadata
-    • `SignalGrid` – lifecycle trace for resolution
+    • `Grid` – lifecycle trace for resolution
     • `Source` – original WirePath or identifier
     • Optional `AdapterJacket` metadata if sourced from a condenser adapter
 

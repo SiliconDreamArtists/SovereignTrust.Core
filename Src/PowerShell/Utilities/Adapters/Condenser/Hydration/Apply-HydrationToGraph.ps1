@@ -5,7 +5,7 @@ function Apply-HydrationToGraph {
         [Parameter(Mandatory)][string]$TargetPath,
         [Parameter()][string]$Mode = "Replace"
     )
-    $signal = [Signal]::new("Apply-HydrationToGraph")
+    $signal = [Signal]::Start("Apply-HydrationToGraph") | Select-Object -Last 1
     try {
         if ($Mode -eq "Replace") {
             $writeSignal = Add-PathToDictionary -Dictionary $Graph -Path $TargetPath -Value $ParsedObject | Select-Object -Last 1

@@ -27,7 +27,7 @@ function Convert-ToUnifiedHashtable {
         [Parameter(Mandatory)][object]$InputObject
     )
 
-    $signal = [Signal]::new("Convert-ToUnifiedHashtable")
+    $signal = [Signal]::Start("Convert-ToUnifiedHashtable") | Select-Object -Last 1
 
     try {
         if ($InputObject -is [Signal]) {
@@ -74,7 +74,7 @@ function Merge-CondenserDictionaries {
         [Parameter()][bool]$Recursive = $true
     )
 
-    $signal = [Signal]::new("Merge-CondenserDictionaries")
+    $signal = [Signal]::Start("Merge-CondenserDictionaries") | Select-Object -Last 1
 
     function Merge-Inner {
         param (
@@ -112,7 +112,7 @@ function Merge-CondenserUnifiedMemory {
         [Parameter(Mandatory)][object]$Overlay
     )
 
-    $signal = [Signal]::new("Merge-CondenserUnifiedMemory")
+    $signal = [Signal]::Start("Merge-CondenserUnifiedMemory") | Select-Object -Last 1
 
     try {
         $baseHash   = Convert-ToUnifiedHashtable -InputObject $Base | Select-Object -Last 1

@@ -1,7 +1,7 @@
 # 🧭 Conduction Doctrine
 
 ## 📖 Title
-**Conduction Doctrine**
+**Conduction Doctrine 1.1**
 
 ## 🌟 Purpose
 Describes the lifecycle, jacket usage, and memory expansion rules for all Conductions within the SovereignTrust framework. It formalizes execution flow as a recursive signal-bearing ritual.
@@ -14,7 +14,7 @@ Describes the lifecycle, jacket usage, and memory expansion rules for all Conduc
 - A Conduction contains:
   - `$Environment`
   - `$Context`
-  - `$AttachmentJackets`
+  - `$AdapterJackets`
   - A living signal graph
 
 ---
@@ -23,15 +23,15 @@ Describes the lifecycle, jacket usage, and memory expansion rules for all Conduc
 
 - Conductions are started via `Start-BondingConductor`
 - The ConductionJacket includes all initial memory surfaces.
-- Attachments must be resolved from jackets using `Resolve-AttachmentFromJacket`.
+- Adapters must be resolved from jackets using `Resolve-AdapterFromJacket`.
 
 ---
 
-## III. Mapped Attachment Surfaces
+## III. Mapped Adapter Surfaces
 
 - Each jacket becomes a mounted surface in:
-  - `MappedStorageAttachments`
-  - `MappedNetworkAttachments`
+  - `MappedStorageAdapters`
+  - `MappedNetworkAdapters`
 - These are available throughout execution memory.
 
 ---
@@ -66,4 +66,4 @@ Describes the lifecycle, jacket usage, and memory expansion rules for all Conduc
 ## 🌀 Closing Principle
 
 A Conduction is not just an execution.
-It is a ceremony of memory, attachment, and recursive signal awareness.
+It is a ceremony of memory, adapter, and recursive signal awareness.

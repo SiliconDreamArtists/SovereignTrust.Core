@@ -7,18 +7,18 @@ function Convert-GraphToJson {
         [bool]$IgnoreInternalObjects = $false
     )
 
-    $signal = [Signal]::new("Convert-GraphToJson")
+    $signal = [Signal]::Start("Convert-GraphToJson") | Select-Object -Last 1
 
     try {
         $exportObject = @{
             Environment = if ($IgnoreInternalObjects) { $null } else { $Graph.Environment }
             GraphSignal = if ($IgnoreInternalObjects) { $null } else { $Graph.GraphSignal }
-            SignalGrid  = @{}
+            Grid  = @{}
         }
 
-        foreach ($key in $Graph.SignalGrid.Keys) {
-            $sig = $Graph.SignalGrid[$key]
-            $exportObject.SignalGrid[$key] = if ($IgnoreInternalObjects) {
+        foreach ($key in $Graph.Grid.Keys) {
+            $sig = $Graph.Grid[$key]
+            $exportObject.Grid[$key] = if ($IgnoreInternalObjects) {
                 $sig.Result  # Only export signal result, skip logs/pointers
             } else {
                 $sig
