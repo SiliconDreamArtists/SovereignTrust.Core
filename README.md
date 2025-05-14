@@ -1,5 +1,6 @@
-# SovereignTrust.Foundation
-Sovereign Trust Foundation protocol helpers, commands, and signal infrastructure powering all SovereignTrust components.
+# SovereignTrust -> Protocol
+# SovereignTrust.Foundation -> Reference Implementation
+Sovereign Trust Foundation provides the Sovereign Trust protocol helpers, commands, and signal infrastructure powering all SovereignTrust components.
 ```plaintext
 ███████╗      ████████╗
 ██╔════╝      ╚══██╔══╝
