@@ -1,4 +1,4 @@
-# SovereignTrust -> Protocol
+# Sovereign Trust -> Sovereign Agent Mesh Protocol
 # SovereignTrust.Foundation -> Reference Implementation
 Sovereign Trust Foundation provides the Sovereign Trust protocol helpers, commands, and signal infrastructure powering all SovereignTrust components, providing the core functionality for the Sovereign Trust reference runtime by SDA.
 ```plaintext
