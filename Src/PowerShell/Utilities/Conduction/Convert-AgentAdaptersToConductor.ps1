@@ -1,7 +1,7 @@
 # ░▒▓════════════════════════════════════════════════════════════════════▓▒░
 # File: Convert-AgentAdaptersToConductor.ps1 • Project: SovereignTrust Core
 # License: MIT • Authors: Shadow PhanTom, Neural Alchemist • Generated: 2025-04-30
-# Lineage: SovereignTrust.Core.Adapters.Convert-AgentAdaptersToConductor
+# Lineage: SovereignTrust.Foundation.Adapters.Convert-AgentAdaptersToConductor
 # ░▒▓════════════════════════════════════════════════════════════════════▓▒░
 # 🧠 SIGNAL USAGE EXEMPLAR
 # This file demonstrates the full spectrum of SovereignTrust signal recursion patterns:

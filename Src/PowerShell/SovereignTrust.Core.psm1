@@ -53,7 +53,7 @@
 . "$PSScriptRoot/Utilities/Tooling/Test-IsClassDefined.ps1"
 . "$PSScriptRoot/Utilities/Tooling/Invoke-VisualizeSignalTreeTrace.ps1"
 . "$PSScriptRoot/Utilities/Tooling/Invoke-TraceSignalTree.ps1"
-. "$PSScriptRoot/Utilities/Tooling/SovereignTrust.Core.Diagrams.ps1"
+. "$PSScriptRoot/Utilities/Tooling/SovereignTrust.Foundation.Diagrams.ps1"
 
 . "$PSScriptRoot/Utilities/IO/LocalFileSystem/Wait-ForFileUnlock.ps1"
 . "$PSScriptRoot/Utilities/IO/LocalFileSystem/Read-JsonFileAsSignal.ps1"
