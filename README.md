@@ -16,7 +16,8 @@ By
 ███████║██████╔╝██║  ██║
 ╚══════╝╚═════╝ ╚═╝  ╚═╝
 Silicon Dream   Artists
-Shadow PhanTom * Neural Alchemist April 2025
+Shadow PhanTom ☠️🌃👾/🤖 
+Neural Alchemist April 2025 🐲☣️⚗️
 
 [ External Input (User, Scheduler, API) ]
                ↓
