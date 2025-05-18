@@ -31,7 +31,7 @@ function Resolve-PathFormulaGraphCondenserAdapter {
         $graph.RegisterResultAsSignal("TokenCondenser",     [TokenCondenser]::new($mappedAdapter, $Conductor))     | Out-Null
         $graph.RegisterResultAsSignal("HydrationCondenser", [HydrationCondenser]::new($mappedAdapter, $Conductor)) | Out-Null
         $graph.RegisterResultAsSignal("GraphCondenser",     [GraphCondenser]::new($mappedAdapter, $Conductor))     | Out-Null
-        $graph.RegisterResultAsSignal("FormulaGraphCondenser", [FormulaGraphCondenser]::new($mappedAdapter, $Conductor)) | Out-Null
+        $graph.RegisterResultAsSignal("FormulaGraphCondenser", [FormulaGraphCondenser]::Start($mappedAdapter, $Conductor)) | Out-Null
 
         $graph.Finalize()
         $opSignal.SetResult($graph)

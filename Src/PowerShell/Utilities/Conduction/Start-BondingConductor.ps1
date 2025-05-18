@@ -9,7 +9,7 @@ function Start-BondingConductor {
 
     try {
         # ░▒▓█ INSTANTIATE CONDUCTOR █▓▒░
-        $bondingConductor = [Conductor]::new($null, $ConductionSignal)
+        $bondingConductor = [Conductor]::Start($null, $ConductionSignal)
         Add-PathToDictionary -Dictionary $bondingConductor -Path "$.%.Status" -Value "Initializing" | Out-Null
 
         $opSignal.LogInformation("✅ BondingConductor initialized from ConductionSignal.")

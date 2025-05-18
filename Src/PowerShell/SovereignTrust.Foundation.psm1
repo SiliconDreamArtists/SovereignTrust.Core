@@ -74,7 +74,6 @@
 . "$PSScriptRoot/Utilities/Json/Set-DictionaryValue.ps1"
 
 . "$PSScriptRoot/Utilities/Graph/Resolve-PathFormulaGraph.ps1"
-. "$PSScriptRoot/Utilities/Graph/Resolve-PathFormulaGraphForAgentRoles.ps1"
 . "$PSScriptRoot/Utilities/Graph/Resolve-PathFormulaGraphForModule.ps1"
 . "$PSScriptRoot/Utilities/Graph/Resolve-PathFormulaGraphForPublisher.ps1"
 . "$PSScriptRoot/Utilities/Graph/Resolve-PathFormulaGraphCondenserAdapter.ps1"
