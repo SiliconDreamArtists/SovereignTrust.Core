@@ -19,6 +19,10 @@
 . "$PSScriptRoot/Utilities/Graph/Convert-GraphToJson.ps1"
 . "$PSScriptRoot/Utilities/Graph/Convert-JsonToGraph.ps1"
 
+. "$PSScriptRoot/Utilities/Adapters/Condenser/Memory/Invoke-HotPathResolution.ps1"
+. "$PSScriptRoot/Utilities/Adapters/Condenser/Memory/Invoke-MemoryCondenser.ps1"
+. "$PSScriptRoot/Utilities/Adapters/Condenser/Memory/Invoke-PathHydration.ps1"
+
 . "$PSScriptRoot/Utilities/Adapters/Condenser/Hydration/Resolve-HydrationSourcePath.ps1"
 . "$PSScriptRoot/Utilities/Adapters/Condenser/Hydration/Read-HydrationFile.ps1"
 . "$PSScriptRoot/Utilities/Adapters/Condenser/Hydration/Apply-HydrationToGraph.ps1"
@@ -33,6 +37,7 @@
 . "$PSScriptRoot/Classes/Adapters/Condenser/HydrationCondenser.ps1"
 . "$PSScriptRoot/Classes/Adapters/Condenser/GraphCondenser.ps1"
 . "$PSScriptRoot/Classes/Adapters/Condenser/FormulaGraphCondenser.ps1"
+. "$PSScriptRoot/Classes/Adapters/Condenser/MemoryCondenser.ps1"
 . "$PSScriptRoot/Classes/Adapters/Condenser/TokenCondenser.ps1"
 . "$PSScriptRoot/Classes/Adapters/Condenser/MergeCondenser.ps1"
 

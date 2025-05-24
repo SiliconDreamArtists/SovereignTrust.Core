@@ -1,24 +1,37 @@
-# ░▒▓█ SDA MapCondenser █▓▒░
-# PowerShell implementation of MapCondenser for SovereignTrust
+# =============================================================================
+# 🧩 MapCondenser (Symbolic Mapping + Contextual Replacement)
+#  License: MIT License • Copyright (c) 2025 Silicon Dream Artists / BDDB
+#  Authors: Shadow PhanTom ☠️🧁👾️/🤖 • Neural Alchemist ⚗️☣️🐲 • Last Updated: 05/20/2025
+# =============================================================================
 # Performs template condensation using dynamic mappings and embedded context.
+# Resolves tags such as `@@TAG`, `##TAG`, `<TAG />` using sovereign source maps.
+# Often used in Condenser chains during token hydration, agent bootstrap, or
+# reactive publishing from flattened proposal schemas.
+# =============================================================================
 
 class MapCondenser {
     [Conductor]$Conductor
     [MappedCondenserAdapter]$MappedCondenserAdapter
-    [Signal]$ControlSignal
+    [Signal]$Signal  # Previously ControlSignal
 
-    MapCondenser([MappedCondenserAdapter]$mappedAdapter, [Conductor]$conductor) {
-        $this.MappedCondenserAdapter = $mappedAdapter
-        $this.Conductor = $conductor
-        $this.ControlSignal = [Signal]::Start("MergeCondenser.Control") | Select-Object -Last 1
+    MapCondenser() {
+        # Empty constructor — use .Start()
+    }
+
+    static [MapCondenser] Start([MappedCondenserAdapter]$mappedAdapter, [Conductor]$conductor) {
+        $instance = [MapCondenser]::new()
+        $instance.MappedCondenserAdapter = $mappedAdapter
+        $instance.Conductor = $conductor
+        $instance.Signal = [Signal]::Start("MapCondenser.Control") | Select-Object -Last 1
+        return $instance
     }
 
     [Signal] CondenseTemplate([object]$Proposal, [object]$Context) {
-        $signal = [Signal]::Start("CondenseTemplate") | Select-Object -Last 1
+        $opSignal = [Signal]::Start("CondenseTemplate") | Select-Object -Last 1
 
         if (-not $Proposal -or -not $Proposal.Content) {
-            $signal.LogCritical("Invalid or missing Proposal.Content for condensation.")
-            return $signal
+            $opSignal.LogCritical("Invalid or missing Proposal.Content for condensation.")
+            return $opSignal
         }
 
         $variableTags = $this.GetVariableTags($Proposal.Content, $Proposal.ReplacementType)
@@ -29,21 +42,24 @@ class MapCondenser {
 
                 if ($relayData.Value) {
                     $resolved = Resolve-PathFromDictionary -Dictionary $relayData.Value -Path $tag
-                    $signal.MergeSignal(@($resolved))
+                    $opSignal.MergeSignal($resolved)
 
                     if ($resolved.Success()) {
-                        $Proposal.Content = $this.ReplaceTagInContent($Proposal.Content, $resolved.GetResult(), $tag, $Proposal.MappingType, $Proposal.ReplacementType)
+                        $Proposal.Content = $this.ReplaceTagInContent(
+                            $Proposal.Content,
+                            $resolved.GetResult(),
+                            $tag,
+                            $Proposal.MappingType,
+                            $Proposal.ReplacementType
+                        )
                     }
                 }
             }
         }
 
-        $signal.SetResult(@{
-            Content = $Proposal.Content
-        })
-
-        $signal.LogInformation("Condensation completed.")
-        return $signal
+        $opSignal.SetResult(@{ Content = $Proposal.Content })
+        $opSignal.LogInformation("Condensation completed.")
+        return $opSignal
     }
 
     [string] ReplaceTagInContent([string]$Input, [string]$Value, [string]$Tag, [string]$MappingType, [string]$ReplacementType) {
@@ -66,8 +82,6 @@ class MapCondenser {
             'AtAttag'      { return @("@@$Tag") }
             default        { return @() }
         }
-
-        return @()
     }
 
     [string[]] GetVariableTags([string]$Content, [string]$Type) {
@@ -78,7 +92,5 @@ class MapCondenser {
             'HashHashtag' { return [regex]::Matches($Content, "##[a-zA-Z0-9_.-]+") | ForEach-Object { $_.Value.Substring(2) } }
             default       { return @() }
         }
- 
-        return @()
     }
 }

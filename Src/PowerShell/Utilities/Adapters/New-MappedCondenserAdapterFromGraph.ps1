@@ -18,7 +18,7 @@ function New-MappedCondenserAdapterFromGraph {
         $adapterGraph   = $mappedAdapter.Signal.GetResult() | Select-Object -Last 1
 
         # ░▒▓█ MOUNT MAPPED CONDENSER ON CONDUCTOR'S GRAPH █▓▒░
-        $conductorGraphSignal = Resolve-PathFromDictionary -Dictionary $Conductor -Path "$.*" | Select-Object -Last 1
+        $conductorGraphSignal = Resolve-PathFromDictionary -Dictionary $Conductor -Path "$.*.#.Adapters.*" | Select-Object -Last 1
         if ($opSignal.MergeSignalAndVerifyFailure($conductorGraphSignal)) {
             $opSignal.LogCritical("❌ Could not resolve Conductor pointer graph.")
             return $opSignal

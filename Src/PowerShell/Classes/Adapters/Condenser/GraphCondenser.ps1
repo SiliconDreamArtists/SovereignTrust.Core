@@ -1,21 +1,35 @@
+# =============================================================================
+# 🧩 GraphCondenser (Tag Replacement + Textual Mini-Condenser)
+#  License: MIT License • Copyright (c) 2025 Silicon Dream Artists / BDDB
+#  Authors: Shadow PhanTom ☠️🧁👾️/🤖 • Neural Alchemist ⚗️☣️🐲 • Last Updated: 05/20/2025
+# =============================================================================
+# This component performs lightweight string-based condensation using tag scanning
+# and source overlay. Designed for proposal-to-template synthesis, where symbolic
+# tags such as @@TAG or ##TAG are replaced using sovereign memory maps.
+#
+# Memory-safe, signal-tracked, and designed for ceremonial use in Condenser layers.
+# =============================================================================
+
 class GraphCondenser {
     [Conductor]$Conductor
     [MappedCondenserAdapter]$MappedCondenserAdapter
-    [Signal]$ControlSignal
+    [Signal]$Signal  # Sovereign control signal
 
-    GraphCondenser([MappedCondenserAdapter]$mappedAdapter, [Conductor]$conductor) {
-        $this.MappedCondenserAdapter = $mappedAdapter
-        $this.Conductor = $conductor
-        $this.ControlSignal = [Signal]::Start("GraphCondenser.Control") | Select-Object -Last 1
+    GraphCondenser() {
+        # Constructor intentionally empty; use Start() method.
     }
 
-    GraphCondenser([object]$mappedCondenserAdapter) {
-        $this.MappedCondenserAdapter = $mappedCondenserAdapter
+    static [GraphCondenser] Start([MappedCondenserAdapter]$mappedAdapter, [Conductor]$conductor) {
+        $instance = [GraphCondenser]::new()
+        $instance.MappedCondenserAdapter = $mappedAdapter
+        $instance.Conductor = $conductor
+        $instance.Signal = [Signal]::Start("GraphCondenser.Control") | Select-Object -Last 1
+        return $instance
     }
 
     [Signal] CondenseMini([object]$Proposal, [object]$CancellationToken, [string]$OverrideTemplatePath = $null) {
-        $signal = [Signal]::Start("CondenseMini") | Select-Object -Last 1
-        $signal.Result = [PSCustomObject]@{ Content = "" }
+        $opSignal = [Signal]::Start("CondenseMini") | Select-Object -Last 1
+        $opSignal.Result = [PSCustomObject]@{ Content = "" }
 
         $variableTags = $this.GetVariableTags($Proposal.Content, $Proposal.ReplacementType)
 
@@ -31,8 +45,8 @@ class GraphCondenser {
             }
         }
 
-        $signal.Result.Content = $Proposal.Content
-        return $signal
+        $opSignal.Result.Content = $Proposal.Content
+        return $opSignal
     }
 
     [string] UpdateStringValues([string]$InputValue, [string]$AugmentedValue, [string]$LookupTag, [string]$MappingType, [string]$ReplacementType) {
@@ -67,7 +81,6 @@ class GraphCondenser {
 
     [string[]] GetVariableTags([string]$InputValue, [string]$ReplacementType) {
         if ($null -eq $InputValue) { return @() }
-            # TODO Add support for all specified replacement types through a plugin system.
 
         switch ($ReplacementType) {
             'AtAttag' {

@@ -38,7 +38,7 @@ class FormulaGraphCondenser {
         $opSignal = [Signal]::Start("FormulaGraphCondenser.InvokeFromPlanPath") | Select-Object -Last 1
 
         # Determine base memory to evolve (from existing Result or jacket)
-        $initialMemory = if ($this.Signal -and $this.Signal.GetResult()) {
+        $initialMemory = if ($this.Signal -and $this.Signal.HasResult()) {
             $this.Signal.GetResult()
         }
         else {
@@ -46,7 +46,7 @@ class FormulaGraphCondenser {
         }
 
         # Start a new signal for Condenser with memory + jacket
-        $condenserSignal = [Signal]::Start("GraphCondenser", $opSignal, $null, $initialMemory) | Select-Object -Last 1
+        $condenserSignal = [Signal]::Start("GraphCondenser", $jacketObject) | Select-Object -Last 1
         $condenserSignal.SetJacket($jacketObject) | Out-Null
 
         # Extract graph plans using WirePath
@@ -57,7 +57,7 @@ class FormulaGraphCondenser {
 
         # Inject plans into %.GraphPlans for downstream Condenser
         $graphPlans = $planSignal.GetResult()
-        Add-PathToDictionary -Dictionary $condenserSignal -Path "$.%.GraphPlans" -Value $graphPlans | Out-Null
+        Add-PathToDictionary -Dictionary $condenserSignal -Path "%.%.@.GraphPlans" -Value $graphPlans | Out-Null
 
         # 🔁 Invoke the FormulaGraphCondenser
         $resultSignal = Invoke-FormulaGraphCondenser -Signal $condenserSignal | Select-Object -Last 1

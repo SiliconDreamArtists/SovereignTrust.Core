@@ -22,8 +22,8 @@ class Conductor {
 
         $conductor.Signal.SetJacket($jacketSignal)
 
-        Add-PathToDictionary -Dictionary $conductor -Path "$.%.HostConductor"   -Value $hostConductor        | Out-Null
-        Add-PathToDictionary -Dictionary $conductor -Path "$.%.IsHostConductor" -Value ($null -eq $hostConductor) | Out-Null
+        #        Add-PathToDictionary -Dictionary $conductor -Path "$.%.HostConductor"   -Value $hostConductor        | Out-Null
+        #        Add-PathToDictionary -Dictionary $conductor -Path "$.%.IsHostConductor" -Value ($null -eq $hostConductor) | Out-Null
 
         if ($conductor.Signal.MergeSignalAndVerifyFailure(@($conductor.InitializeMemory()    | Select-Object -Last 1))) { return $opSignal }
         if ($conductor.Signal.MergeSignalAndVerifyFailure(@($conductor.LoadMappedAdapters() | Select-Object -Last 1))) { return $opSignal }
@@ -48,19 +48,39 @@ class Conductor {
 
     [Signal] LoadMappedAdapters() {
         $opSignal = [Signal]::Start("Conductor.LoadMappedAdapters") | Select-Object -Last 1
-        $newGraphSignal = Add-PathToDictionary -Dictionary $this -Path "$.*.#.Adapters.*" | Select-Object -Last 1
 
-        $mapped = $this.LoadMappedCondenserAdapter() | Select-Object -Last 1
-        if ($opSignal.MergeSignalAndVerifyFailure($mapped)) { return $opSignal }
+        # ░▒▓█ ENSURE ADAPTERS GRID EXISTS █▓▒░
+        $adaptersGridSignal = Add-PathToDictionary -Dictionary $this.Signal -Path "*.#.Adapters.*" | Select-Object -Last 1
+        if ($opSignal.MergeSignalAndVerifyFailure($adaptersGridSignal)) {
+            return $opSignal.LogCritical("❌ Failed to initialize Adapters grid.")
+        }
 
-        $graphSignal = Resolve-PathFromDictionary -Dictionary $this -Path "$.*.#.Adapters.*" | Select-Object -Last 1
-        $graph = $graphSignal.GetResult()
+        # ░▒▓█ DEFINE ADAPTERS TO LOAD █▓▒░
+        $adaptersToRegister = @(
+            @{ Name = "MappedStorage"; Instance = [MappedStorageAdapter]::Start($this) },
+            @{ Name = "MappedNetwork"; Instance = [MappedNetworkAdapter]::Start($this) }
+        )
 
-        $graph.RegisterResultAsSignal("Mapped.Storage", [MappedStorageAdapter]::Start($this)) | Out-Null
-        $graph.RegisterResultAsSignal("Mapped.Network", [MappedNetworkAdapter]::Start($this)) | Out-Null
+        # 🔁 Load MappedCondenserAdapter and add to list
+        $mappedCondenserSignal = $this.LoadMappedCondenserAdapter() | Select-Object -Last 1
+        if ($opSignal.MergeSignalAndVerifyFailure(($mappedCondenserSignal))) {
+            $opSignal.LogCritical("❌ Failed to load MappedCondenserAdapter.")
+            return $opSignal
+        }
+
+        # ░▒▓█ REGISTER ADAPTERS INTO ADAPTERS GRID █▓▒░
+        foreach ($entry in $adaptersToRegister) {
+            $path = "*.#.Adapters.*.$($entry.Name)"
+            $regSignal = Add-PathToDictionary -Dictionary $this.Signal -Path $path -Value $entry.Instance | Select-Object -Last 1
+            if ($regSignal.Failure()) {
+                $opSignal.LogWarning("⚠️ Failed to register adapter '$($entry.Name)'")
+            }
+            else {
+                $opSignal.LogInformation("🔌 Registered adapter '$($entry.Name)'")
+            }
+        }
 
         Invoke-TraceSignalTree -Signal $this.Signal -VisualizeFinal $true
-
         return $opSignal
     }
 
@@ -68,34 +88,39 @@ class Conductor {
         $opSignal = [Signal]::Start("Conductor.LoadAgentGraph") | Select-Object -Last 1
 
         try {
-            # 🧠 Resolve FormulaGraphCondenser from memory
-            $condenserSignal = Resolve-PathFromDictionary -Dictionary $this.Signal -Path "*.MappedAdapters.MappedCondenserAdapter.FormulaGraphCondenser" | Select-Object -Last 1
+            $memoryCondenserSignal = Resolve-PathFromDictionary -Dictionary $this -Path "$.*.#.Adapters.*.#.MappedCondenser.@.$.*.#.MemoryCondenser.@.@" | Select-Object -Last 1
+
+            # ░▒▓█ Resolve FormulaGraphCondenser from memory █▓▒░
+            $condenserSignal = Resolve-PathFromDictionary -Dictionary $this -Path "$.*.#.Adapters.*.#.MappedCondenser.@.$.*.#.FormulaGraphCondenser" | Select-Object -Last 1
+
             if ($opSignal.MergeSignalAndVerifyFailure($condenserSignal)) {
                 return $opSignal.LogCritical("❌ Could not resolve FormulaGraphCondenser.")
             }
 
-            $condenser = $condenserSignal.GetResult()
+            $condenserGraphSignal = $condenserSignal.GetResult()
+            $condenser = $condenserGraphSignal.GetResult()
 
-            # 🔁 Create new signal: Jacket = source context, Result = target graph
-            $inputSignal = [Signal]::Start("GraphCondenser.AgentGraph", $this.Signal) | Select-Object -Last 1
-            $inputSignal.SetJacket($this.Signal.GetJacket()) | Out-Null
-            $inputSignal.SetResult($this.Signal.GetPointer()) | Out-Null
-
-            # 🧬 Run the formula graph condenser on the declared plan path
-            $resultSignal = $condenser.InvokeFromPlanPath("%.GraphFormulas.Agent", $inputSignal) | Select-Object -Last 1
-            if ($opSignal.MergeSignalAndVerifyFailure($resultSignal)) {
-                return $opSignal.LogCritical("❌ Failed to generate AgentGraph via condenser.")
+            # ░▒▓█ Launch Agent graph formula processing █▓▒░
+            $graphPlanSignal = $condenser.InvokeFromPlanPath("%.%.@.GraphFormulas.Agents", $this.Signal) | Select-Object -Last 1
+            if ($opSignal.MergeSignalAndVerifyFailure($graphPlanSignal)) {
+                return $opSignal.LogCritical("❌ Failed to invoke Agent Graph plan from jacket.")
             }
 
-            # 💾 Register result into pointer graph
-            $graphSignal = Resolve-PathFromDictionary -Dictionary $this -Path "$.*" | Select-Object -Last 1
-            $graph = $graphSignal.GetResult()
-            $graph.RegisterSignal("AgentGraph", $resultSignal) | Out-Null
+            # ░▒▓█ Store result Graphs into Pointer Graph at *.#.Agents █▓▒░
+            $pointerGraphSignal = Resolve-PathFromDictionary -Dictionary $this -Path "$.*" | Select-Object -Last 1
+            $graph = $pointerGraphSignal.GetResult()
 
-            $opSignal.LogInformation("✅ AgentGraph registered into conductor pointer.")
+            $agentGraphs = $graphPlanSignal.GetResult().Graphs.Agents
+            if ($null -eq $agentGraphs) {
+                return $opSignal.LogCritical("❌ No agent graphs returned in expected location: .Graphs.Agents")
+            }
+
+            $graph.RegisterResultAsSignal("Agents", $agentGraphs) | Out-Null
+            $opSignal.LogInformation("✅ Agent graphs injected into pointer graph under 'Agents'.")
+
         }
         catch {
-            $opSignal.LogCritical("🔥 Exception in LoadAgentGraph: $($_.Exception.Message)")
+            $opSignal.LogCritical("🔥 Exception during LoadAgentGraph: $($_.Exception.Message)")
         }
 
         return $opSignal
@@ -104,31 +129,20 @@ class Conductor {
     [Signal] LoadMappedCondenserAdapter() {
         $opSignal = [Signal]::Start("Conductor.LoadMappedCondenserAdapter") | Select-Object -Last 1
 
-        # 🔧 Create the actual condenser adapter
+        # 🔧 Create the actual adapter instance
         $condenserSignal = New-MappedCondenserAdapterFromGraph -Conductor $this | Select-Object -Last 1
         if ($opSignal.MergeSignalAndVerifyFailure($condenserSignal)) {
             return $opSignal.LogCritical("❌ Failed to create MappedCondenserAdapter.")
         }
 
-        # 🔍 Resolve or create Adapters node
-        $graphSignal = Resolve-PathFromDictionary -Dictionary $this -Path "$.*" | Select-Object -Last 1
-        $graph = $graphSignal.GetResult()
-
-        # 📦 Check if Adapters container already exists
-        $adaptersSignal = Resolve-PathFromDictionary -Dictionary $graph -Path "Adapters" | Select-Object -Last 1
-        if ($adaptersSignal.Failure()) {
-            # 🛠 Create Adapters signal if it doesn't exist
-            $adaptersSignal = [Signal]::Start("Adapters") | Select-Object -Last 1
-            $adaptersSignal.SetPointer([Graph]::Start("Adapters.Pointer", $graphSignal, $false)) | Out-Null
-            $graph.RegisterSignal("Adapters", $adaptersSignal) | Out-Null
+        # 🧬 Return adapter pair without mutating memory
+        $adapterPair = @{
+            Name     = "MappedCondenser"
+            Instance = $condenserSignal
         }
 
-        # 🧱 Register the condenser under: Adapters.Pointer.Condensers.FormulaGraphCondenser
-        $adaptersGraphSignal = Resolve-PathFromDictionary -Dictionary $this -Path "$.*.#.Adapters.*" | Select-Object -Last 1
-        $adaptersGraph = $adaptersGraphSignal.GetResult()
-        $adaptersGraph.RegisterSignal("Condensers.FormulaGraphCondenser", $condenserSignal) | Out-Null
-
-        $opSignal.LogInformation("✅ FormulaGraphCondenser registered under Adapters.Condensers.FormulaGraphCondenser.")
+        $opSignal.SetResult($adapterPair)
+        $opSignal.LogInformation("🧬 MappedCondenserAdapter created and returned as pair. Not registered.")
         return $opSignal
     }
 
